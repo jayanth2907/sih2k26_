@@ -1,0 +1,61 @@
+# ==============================================================================
+# PS26080: WEATHER REGIME CLASSIFICATION ENGINE CONFIGURATION
+# Ministry of Earth Sciences (MoES) / NCMRWF
+# ==============================================================================
+
+version: "2.0.0"
+description: "Objective synoptic thresholds for South Asian Summer Monsoon (SASM) regime detection"
+
+# 1. Active / Break Monsoon Thresholds
+active_break:
+  monsoon_trough_lat_normal: 24.5 # Degrees North (normal mean position)
+  monsoon_trough_active_south_threshold: 22.0 # Trough shifted south -> Active
+  monsoon_trough_break_foothill_threshold: 27.0 # Trough shifted north -> Break
+  low_level_jet_850_critical_speed_kts: 28.0 # Low-Level Jet strength (kts)
+  low_level_jet_850_break_speed_kts: 15.0 # Suppressed peninsular westerlies
+  olr_convective_active_w_m2: 210.0 # Deep convection threshold (W/m^2)
+  olr_suppressed_break_w_m2: 240.0 # Clear/suppressed convection
+  core_monsoon_rainfall_active_mm: 12.0 # Central India daily rainfall index (mm/day)
+  core_monsoon_rainfall_break_mm: 4.0
+
+# 2. Low Pressure System (LPS) / Depression Detector
+lps_detector:
+  mslp_depression_threshold_hpa: 996.0 # Central MSLP indicative of depression
+  mslp_low_threshold_hpa: 1002.0 # Central MSLP indicative of monsoon low
+  pressure_gradient_threshold_hpa_deg: 2.0 # Pressure gradient per degree lat/lon
+  vorticity_850_threshold_1e5_s: 3.5 # Relative vorticity at 850 hPa (10^-5 s^-1)
+  geopotential_anomaly_850_gpm: -25.0 # Geopotential height anomaly relative to seasonal mean
+  search_radius_km: 450.0 # Search radius around target coordinates
+
+# 3. Coastal Convergence Detector
+coastal_detector:
+  max_distance_to_coast_km: 120.0 # Coastal proximity boundary
+  min_onshore_wind_speed_850_ms: 6.0 # Min onshore 850 hPa wind
+  min_relative_humidity_850_pct: 75.0 # Boundary layer moisture
+  coastal_convergence_index_min: 0.35 # Normalized coastal convergence proxy
+
+# 4. Orographic Lifting Detector
+orographic_detector:
+  min_elevation_m: 250.0 # Minimum elevation above MSL
+  min_slope_degrees: 1.8 # Terrain slope threshold
+  min_wind_perpendicular_speed_ms: 7.0 # Wind component normal to mountain ridge
+  min_moisture_flux_g_kg_ms: 80.0 # Specific humidity * normal wind speed
+  orographic_lift_index_threshold: 0.40
+
+# 5. Western Disturbance Detector
+western_disturbance:
+  target_lat_min: 24.0 # Northern / Northwestern India domain
+  target_lat_max: 38.0
+  target_lon_min: 68.0
+  target_lon_max: 88.0
+  active_months: [1, 2, 3, 4, 10, 11, 12] # Peak winter/pre-monsoon & post-monsoon
+  monsoon_interaction_months: [6, 7, 8, 9] # Rare monsoon WD interactions
+  upper_trough_500hpa_geopotential_anomaly_gpm: -40.0 # 500 hPa trough depth
+  jet_streak_200hpa_wind_speed_ms: 45.0 # Subtropical westerly jet streak
+
+# 6. Multi-Label Classifier Arbitration & Calibration
+classifier:
+  primary_regime_min_confidence: 0.35
+  secondary_regime_min_probability: 0.30
+  max_secondary_regimes: 3
+  demo_mode_seed: 42

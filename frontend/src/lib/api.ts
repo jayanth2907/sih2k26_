@@ -1,6 +1,10 @@
 import { UnifiedPredictionRequest, UnifiedPredictionResponse } from './types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8001';
+const RAW_API_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  'http://127.0.0.1:8001';
+const API_BASE_URL = RAW_API_URL.replace(/\/+$/, '');
 
 export class ApiError extends Error {
   constructor(
@@ -45,6 +49,10 @@ export async function runUnifiedPrediction(
           } else {
             errorDetail = JSON.stringify(errorJson.detail);
           }
+        } else if (errorJson.message) {
+          errorDetail = errorJson.message;
+        } else if (errorJson.error?.message) {
+          errorDetail = errorJson.error.message;
         }
       } catch {
         // Fallback to text if not JSON
@@ -64,8 +72,13 @@ export async function runUnifiedPrediction(
     if (error instanceof Error && error.name === 'AbortError') {
       throw error;
     }
+    const isNetworkError =
+      error instanceof TypeError &&
+      (error.message.includes('fetch') || error.message.includes('Network') || error.message.includes('Failed'));
     throw new ApiError(
-      error instanceof Error ? error.message : 'Network failure connecting to HydroWatch backend service.'
+      isNetworkError
+        ? `Backend service connection failed at ${API_BASE_URL}. Ensure FastAPI is running on port 8001.`
+        : (error instanceof Error ? error.message : 'Network failure connecting to HydroWatch backend service.')
     );
   }
 }
@@ -83,4 +96,83 @@ export async function checkBackendHealth(): Promise<{ status: string; version: s
     throw new ApiError(`Health check failed with status ${response.status}`);
   }
   return response.json();
+}
+
+/**
+ * Fetch all registered post-processing models from model registry.
+ */
+export async function fetchPostprocessingModels() {
+  const url = `${API_BASE_URL}/api/v1/postprocess/models`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new ApiError(`Failed fetching models: ${res.statusText}`, res.status);
+  return res.json();
+}
+
+/**
+ * Fetch 4-product post-processing comparison for a target location.
+ */
+export async function fetchPostprocessingComparison(params: {
+  raw_rainfall_mm?: number;
+  latitude?: number;
+  longitude?: number;
+  lead_time_hours?: number;
+  month?: number;
+}) {
+  const query = new URLSearchParams();
+  if (params.raw_rainfall_mm !== undefined) query.set('raw_rainfall_mm', params.raw_rainfall_mm.toString());
+  if (params.latitude !== undefined) query.set('latitude', params.latitude.toString());
+  if (params.longitude !== undefined) query.set('longitude', params.longitude.toString());
+  if (params.lead_time_hours !== undefined) query.set('lead_time_hours', params.lead_time_hours.toString());
+  if (params.month !== undefined) query.set('month', params.month.toString());
+
+  const url = `${API_BASE_URL}/api/v1/postprocess/compare?${query.toString()}`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new ApiError(`Failed fetching comparison: ${res.statusText}`, res.status);
+  return res.json();
+}
+
+/**
+ * Fetch district-level post-processed forecasts across India.
+ */
+export async function fetchDistrictForecasts(date?: string) {
+  const query = new URLSearchParams();
+  if (date) query.set('date', date);
+  const url = `${API_BASE_URL}/api/v1/postprocess/districts${date ? `?${query.toString()}` : ''}`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new ApiError(`Failed fetching district forecasts: ${res.statusText}`, res.status);
+  return res.json();
+}
+
+/**
+ * Fetch prospective verification benchmarks evaluated on held-out test data.
+ */
+export async function fetchVerificationBenchmarks(regime?: string, threshold_mm = 64.5) {
+  const query = new URLSearchParams();
+  if (regime) query.set('regime', regime);
+  query.set('threshold_mm', threshold_mm.toString());
+
+  const url = `${API_BASE_URL}/api/v1/postprocess/verification?${query.toString()}`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new ApiError(`Failed fetching verification: ${res.statusText}`, res.status);
+  return res.json();
+}
+
+/**
+ * Fetch operational data sources status and ingestion health.
+ */
+export async function fetchDataSourcesStatus() {
+  const url = `${API_BASE_URL}/api/v1/data/status`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new ApiError(`Failed fetching data sources status: ${res.statusText}`, res.status);
+  return res.json();
+}
+
+/**
+ * Fetch data sources catalog.
+ */
+export async function fetchDataSourcesCatalog() {
+  const url = `${API_BASE_URL}/api/v1/data/sources`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new ApiError(`Failed fetching data sources catalog: ${res.statusText}`, res.status);
+  return res.json();
 }

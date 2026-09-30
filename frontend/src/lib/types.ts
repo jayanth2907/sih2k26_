@@ -223,6 +223,146 @@ export interface WarningProvenance {
   rules_version: string;
 }
 
+// ==========================================
+// PS26080: REGIME-AWARE METEOROLOGICAL TYPES
+// ==========================================
+
+export type WeatherRegimeType =
+  | 'ACTIVE_MONSOON'
+  | 'BREAK_MONSOON'
+  | 'MONSOON_LOW_LPS'
+  | 'COASTAL_CONVERGENCE'
+  | 'OROGRAPHIC_RAINFALL'
+  | 'WESTERN_DISTURBANCE'
+  | 'NEUTRAL';
+
+export interface SynopticFeatures {
+  low_level_jet_speed_kts: number;
+  low_level_jet_direction_deg: number;
+  monsoon_trough_lat: number;
+  trough_position: 'normal' | 'active_south' | 'break_foothills' | 'transition';
+  olr_w_m2: number;
+  mid_tropospheric_vorticity_1e5_s: number;
+  surface_pressure_anomaly_hpa: number;
+  cape_j_kg: number;
+  integrated_vapor_transport_kg_m_s: number;
+  orographic_lift_index: number;
+  coastal_convergence_index: number;
+}
+
+export interface AtmosphericDriver {
+  feature: string;
+  value: number;
+  importance: number;
+  description?: string;
+}
+
+export interface RegimeClassification {
+  regime: WeatherRegimeType;
+  confidence: number;
+  description: string;
+  synoptic_drivers: string[];
+}
+
+export interface RegimeResponse {
+  status?: string;
+  location?: Coordinates;
+  location_name?: string | null;
+  target_date?: string;
+  target_month?: number;
+  primary_regime: WeatherRegimeType | RegimeClassification | string;
+  confidence?: number;
+  primary_confidence?: number;
+  secondary_regimes: (WeatherRegimeType | RegimeClassification | string)[];
+  probabilities?: Record<string, number>;
+  drivers?: AtmosphericDriver[];
+  synoptic_features: SynopticFeatures;
+  active_regimes_summary?: string[];
+  diagnostic_narrative?: string;
+  regime_narrative?: string;
+  model_version?: string;
+  data_source?: string;
+  is_demo?: boolean;
+  timestamp?: string;
+}
+
+
+export interface ProductDetail {
+  product_id: 'raw_nwp' | 'quantile_mapping' | 'global_ml' | 'regime_aware_ml';
+  name: string;
+  methodology: string;
+  accumulated_24h_mm: number;
+  peak_hourly_rate_mm_hr: number;
+  hourly_series_mm: number[];
+  bias_correction_delta_mm: number;
+  uncertainty_lower_p10_mm: number;
+  uncertainty_upper_p90_mm: number;
+  ensemble_spread_mm: number;
+}
+
+export interface PostProcessingComparison {
+  raw_nwp: ProductDetail;
+  quantile_mapping: ProductDetail;
+  global_ml_correction: ProductDetail;
+  regime_aware_ml_correction: ProductDetail;
+  best_performing_product: string;
+  skill_gain_vs_raw_pct: number;
+  skill_gain_vs_global_pct: number;
+}
+
+export interface HeavyRainfallProbabilities {
+  heavy_rain_ge_64_5mm: number;
+  very_heavy_rain_ge_115_6mm: number;
+  extremely_heavy_rain_ge_204_5mm: number;
+  imd_category: 'No Warning' | 'Watch (Heavy Rain)' | 'Alert (Very Heavy Rain)' | 'Warning (Extremely Heavy Rain)';
+  probability_source: string;
+}
+
+export interface DistrictForecast {
+  district_name: string;
+  state_name: string;
+  forecast_date: string;
+  raw_nwp_rainfall_mm: number;
+  corrected_rainfall_mm: number;
+  correction_magnitude_mm: number;
+  forecast_lower_bound_p10_mm: number;
+  forecast_upper_bound_p90_mm: number;
+  ensemble_spread_mm: number;
+  heavy_probability_pct: number;
+  very_heavy_probability_pct: number;
+  extreme_probability_pct: number;
+  primary_regime: WeatherRegimeType;
+  uncertainty_category: 'LOW' | 'MODERATE' | 'HIGH' | 'EXTREME';
+}
+
+export interface VerificationMetricSet {
+  rmse: number;
+  ets: number;
+  csi: number;
+  pod: number;
+  far: number;
+  fss: number;
+}
+
+export interface VerificationResponse {
+  reference_source: string;
+  verification_period: string;
+  lead_time_hours: number;
+  sample_size_events: number;
+  raw_nwp: VerificationMetricSet;
+  quantile_mapping: VerificationMetricSet;
+  global_ml: VerificationMetricSet;
+  regime_aware_ml: VerificationMetricSet;
+  regime_specific_skill: Record<string, { ets: number; csi: number; rmse: number }>;
+}
+
+export interface UnifiedSpatialContours {
+  contour_levels_mm: number[];
+  geojson: GeoJSONFeatureCollection;
+  polygon_count: number;
+  max_calibrated_mm: number;
+}
+
 export interface UnifiedPredictionResponse {
   status: string;
   request: {
@@ -238,6 +378,16 @@ export interface UnifiedPredictionResponse {
     [key: string]: unknown;
   };
   generated_at: string;
+  
+  // PS26080 Core Intelligence
+  regime: RegimeResponse;
+  post_processing: PostProcessingComparison;
+  probabilities: HeavyRainfallProbabilities;
+  district_forecast: DistrictForecast;
+  verification: VerificationResponse;
+  contours?: UnifiedSpatialContours | null;
+
+  // Feeds & Observations
   rainfall_prediction?: UnifiedRainfallSummary | null;
   nwp?: UnifiedNwpSummary | null;
   radar?: UnifiedRadarSummary | null;
@@ -255,10 +405,12 @@ export interface UnifiedPredictionRequest {
   prediction_date?: string;
   analysis_datetime?: string;
   nwp_horizon_hours?: number;
+  nwp_source_preference?: string;
   satellite_date?: string;
   satellite_max_cloud?: number;
   min_polygon_area_sq_m?: number;
   location_name?: string;
+  include_geojson_contours?: boolean;
 }
 
 export interface PresetLocation {
@@ -268,4 +420,75 @@ export interface PresetLocation {
   latitude: number;
   longitude: number;
   defaultZoomAltitude: number;
+  regimeHint?: WeatherRegimeType;
+}
+
+export interface ModelRegistryEntry {
+  model_id: string;
+  model_name: string;
+  version: string;
+  architecture: string;
+  training_period: string;
+  validation_period: string;
+  test_period: string;
+  feature_schema_version: string;
+  regime_schema_version: string;
+  data_sources: string[];
+  test_metrics: Record<string, number>;
+  is_operational_ncmrwf: boolean;
+  is_demo: boolean;
+  registered_at: string;
+}
+
+export interface DataSourceStatusResponse {
+  source_id: string;
+  name: string;
+  role: string;
+  is_live_operational: boolean;
+  is_demo_fallback: boolean;
+  last_ingestion_time: string;
+  sample_record_count: number;
+  quality_status: string;
+  error_detail?: string | null;
+}
+
+export type PostProcessingModelId = 'raw_nwp' | 'quantile_mapping' | 'global_ml' | 'regime_aware_ml';
+
+export type CesiumRainfallLayerId =
+  | 'ai_calibrated'
+  | 'raw_nwp'
+  | 'bias_delta'
+  | 'heavy_prob'
+  | 'regime'
+  | 'uncertainty';
+
+export interface ForecastState {
+  timestamp: string;
+  forecast_initialization: string;
+  lead_time_hours: number;
+  latitude: number;
+  longitude: number;
+  district_name: string;
+  state_name: string;
+  data_source: string;
+  is_demo: boolean;
+  selected_model: PostProcessingModelId;
+  active_layer: CesiumRainfallLayerId;
+  regime: WeatherRegimeType;
+  regime_probabilities: Record<string, number>;
+  regime_confidence: number;
+  raw_nwp_mm: number;
+  eqm_mm: number;
+  global_ml_mm: number;
+  regime_aware_mm: number;
+  bias_delta_mm: number;
+  heavy_probability: number;
+  very_heavy_probability: number;
+  extreme_probability: number;
+  p10_mm: number;
+  p50_mm: number;
+  p90_mm: number;
+  uncertainty_width_mm: number;
+  model_version: string;
+  data_freshness_status: string;
 }

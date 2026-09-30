@@ -13,8 +13,8 @@ import {
   MapPin,
   AlertTriangle,
 } from 'lucide-react';
-import { GeoJSONFeatureCollection } from '@/lib/types';
-import { formatCoordinates } from '@/lib/formatters';
+import { CesiumRainfallLayerId, GeoJSONFeatureCollection } from '@/lib/types';
+import { formatCoordinates, formatNumber } from '@/lib/formatters';
 
 interface CesiumGlobeProps {
   latitude: number;
@@ -22,6 +22,17 @@ interface CesiumGlobeProps {
   locationName: string;
   geojson?: GeoJSONFeatureCollection | null;
   polygonCount?: number;
+  activeLayer?: CesiumRainfallLayerId;
+  onSelectLayer?: (layer: CesiumRainfallLayerId) => void;
+  isDemo?: boolean;
+  forecastSummary?: {
+    rawNwpMm?: number;
+    correctedMm?: number;
+    deltaMm?: number;
+    regime?: string;
+    heavyProb?: number;
+    uncertaintyWidth?: number;
+  } | null;
 }
 
 export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
@@ -30,6 +41,10 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
   locationName,
   geojson,
   polygonCount = 0,
+  activeLayer = 'ai_calibrated',
+  onSelectLayer,
+  isDemo = true,
+  forecastSummary,
 }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -44,6 +59,12 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedPolygonMeta, setSelectedPolygonMeta] = useState<Record<string, unknown> | null>(null);
+  const [inspectedLocation, setInspectedLocation] = useState<{
+    lat: number;
+    lon: number;
+    name?: string;
+  } | null>(null);
+  const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -232,83 +253,6 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
     };
   }, []);
 
-  // Handle Location changes: fly camera and reposition marker immediately
-  useEffect(() => {
-    const viewer = viewerRef.current;
-    if (!viewer || !isCesiumLoadedRef.current || viewer.isDestroyed()) return;
-
-    flyCameraToCoordinates(viewer, latitude, longitude, 18000, -38);
-    updateLocationPin(viewer, latitude, longitude, locationName);
-  }, [latitude, longitude, locationName]);
-
-  // Handle GeoJSON inundation polygon updates (or clearing on location change)
-  useEffect(() => {
-    const viewer = viewerRef.current;
-    if (!viewer || !isCesiumLoadedRef.current || viewer.isDestroyed()) return;
-
-    // Immediately remove old GeoJSON data source (strictly prevent cross-location contamination)
-    if (geojsonDataSourceRef.current) {
-      viewer.dataSources.remove(geojsonDataSourceRef.current, true);
-      geojsonDataSourceRef.current = null;
-    }
-    setSelectedPolygonMeta(null);
-
-    if (!geojson || !geojson.features || geojson.features.length === 0) {
-      return;
-    }
-
-    const currentGeoJson = geojson;
-
-    // Load new GeoJSON
-    async function loadGeoJson() {
-      if (!viewer || viewer.isDestroyed() || !currentGeoJson) return;
-      try {
-        const Cesium: typeof CesiumType = await import('cesium');
-
-        // Defensively filter out permanent coastal ocean water features
-        const validFeatures = (currentGeoJson.features || []).filter((feat) => {
-          const props = feat.properties || {};
-          if (props.is_permanent_water === true || props.water_type === 'coastal_ocean') {
-            return false;
-          }
-          return true;
-        });
-
-        if (validFeatures.length === 0) {
-          // If all detected water was coastal ocean (or 0 features), keep camera centered on city coordinates
-          flyCameraToCoordinates(viewer, latitude, longitude, 18000, -38);
-          return;
-        }
-
-        const sanitizedGeoJson = {
-          ...currentGeoJson,
-          features: validFeatures,
-        };
-
-        const dataSource = await Cesium.GeoJsonDataSource.load(sanitizedGeoJson as unknown as Record<string, unknown>, {
-          stroke: Cesium.Color.fromCssColorString('#00E5FF'),
-          fill: Cesium.Color.fromCssColorString('rgba(0, 180, 216, 0.42)'),
-          strokeWidth: 2.5,
-          clampToGround: true,
-        });
-
-        if (viewer.isDestroyed()) return;
-        geojsonDataSourceRef.current = dataSource;
-        await viewer.dataSources.add(dataSource);
-
-        // Fly camera to intelligently fit inundation bounding box
-        viewer.flyTo(dataSource, {
-          duration: 2.0,
-          offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-38), 0),
-        });
-      } catch (geoErr) {
-        console.warn('[HydroWatch Cesium] GeoJSON polygon rendering error:', geoErr);
-      }
-    }
-
-    loadGeoJson();
-  }, [geojson, latitude, longitude]);
-
   // Camera Helper Functions
   const flyCameraToCoordinates = async (
     viewer: CesiumType.Viewer,
@@ -318,6 +262,7 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
     pitchDeg: number
   ) => {
     const Cesium: typeof CesiumType = await import('cesium');
+    if (!viewer || viewer.isDestroyed()) return;
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
       orientation: {
@@ -336,6 +281,8 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
     name: string
   ) => {
     const Cesium: typeof CesiumType = await import('cesium');
+    if (!viewer || viewer.isDestroyed()) return;
+
     if (locationPinEntityRef.current) {
       viewer.entities.remove(locationPinEntityRef.current);
       locationPinEntityRef.current = null;
@@ -368,6 +315,78 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
 
     locationPinEntityRef.current = pinEntity;
   };
+
+  // Handle Location changes
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || !isCesiumLoadedRef.current || viewer.isDestroyed()) return;
+
+    flyCameraToCoordinates(viewer, latitude, longitude, 18000, -38);
+    updateLocationPin(viewer, latitude, longitude, locationName);
+  }, [latitude, longitude, locationName]);
+
+  // Handle GeoJSON inundation polygon updates
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || !isCesiumLoadedRef.current || viewer.isDestroyed()) return;
+
+    if (geojsonDataSourceRef.current) {
+      viewer.dataSources.remove(geojsonDataSourceRef.current, true);
+      geojsonDataSourceRef.current = null;
+    }
+    setSelectedPolygonMeta(null);
+
+    if (!geojson || !geojson.features || geojson.features.length === 0) {
+      return;
+    }
+
+    const currentGeoJson = geojson;
+
+    async function loadGeoJson() {
+      if (!viewer || viewer.isDestroyed() || !currentGeoJson) return;
+      try {
+        const Cesium: typeof CesiumType = await import('cesium');
+
+        const validFeatures = (currentGeoJson.features || []).filter((feat) => {
+          const props = feat.properties || {};
+          if (props.is_permanent_water === true || props.water_type === 'coastal_ocean') {
+            return false;
+          }
+          return true;
+        });
+
+        if (validFeatures.length === 0) {
+          flyCameraToCoordinates(viewer, latitude, longitude, 18000, -38);
+          return;
+        }
+
+        const sanitizedGeoJson = {
+          ...currentGeoJson,
+          features: validFeatures,
+        };
+
+        const dataSource = await Cesium.GeoJsonDataSource.load(sanitizedGeoJson as unknown as Record<string, unknown>, {
+          stroke: Cesium.Color.fromCssColorString('#00E5FF'),
+          fill: Cesium.Color.fromCssColorString('rgba(0, 180, 216, 0.42)'),
+          strokeWidth: 2.5,
+          clampToGround: true,
+        });
+
+        if (viewer.isDestroyed()) return;
+        geojsonDataSourceRef.current = dataSource;
+        await viewer.dataSources.add(dataSource);
+
+        viewer.flyTo(dataSource, {
+          duration: 2.0,
+          offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-38), 0),
+        });
+      } catch (geoErr) {
+        console.warn('[HydroWatch Cesium] GeoJSON polygon rendering error:', geoErr);
+      }
+    }
+
+    loadGeoJson();
+  }, [geojson, latitude, longitude]);
 
   // Map Controls Callbacks
   const handleFocusLocation = () => {
@@ -415,6 +434,60 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
     }
   };
 
+  // Handle Globe Point Click inspection
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || !isCesiumLoadedRef.current || viewer.isDestroyed()) return;
+
+    const CesiumModule = (window as unknown as { Cesium: typeof CesiumType }).Cesium;
+    async function setupGlobeClickHandler() {
+      const Cesium = CesiumModule || (await import('cesium'));
+      if (!viewerRef.current || viewerRef.current.isDestroyed()) return;
+      const currentViewer = viewerRef.current;
+
+      const handler = new Cesium.ScreenSpaceEventHandler(currentViewer.scene.canvas);
+
+      handler.setInputAction((click: { position: CesiumType.Cartesian2 }) => {
+        if (!viewerRef.current || viewerRef.current.isDestroyed()) return;
+        const v = viewerRef.current;
+
+        const pickedObject = v.scene.pick(click.position);
+        if (Cesium.defined(pickedObject) && pickedObject.id && pickedObject.id.properties) {
+          const props: Record<string, unknown> = {};
+          const propertyNames = pickedObject.id.properties.propertyNames;
+          for (const name of propertyNames) {
+            props[name] = pickedObject.id.properties[name]?.getValue();
+          }
+          setSelectedPolygonMeta(props);
+          return;
+        }
+
+        const cartesian = v.camera.pickEllipsoid(click.position, v.scene.globe.ellipsoid);
+        if (cartesian) {
+          const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+          const clickedLat = Cesium.Math.toDegrees(cartographic.latitude);
+          const clickedLon = Cesium.Math.toDegrees(cartographic.longitude);
+          setInspectedLocation({
+            lat: clickedLat,
+            lon: clickedLon,
+            name: `${clickedLat.toFixed(3)}°N, ${clickedLon.toFixed(3)}°E`,
+          });
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    }
+
+    setupGlobeClickHandler();
+  }, []);
+
+  const RAINFALL_LAYERS: { id: CesiumRainfallLayerId; label: string; badge: string; color: string }[] = [
+    { id: 'ai_calibrated', label: 'AI Calibrated', badge: 'Regime-Aware', color: '#00e5ff' },
+    { id: 'raw_nwp', label: 'Raw NWP', badge: 'Baseline', color: '#94a3b8' },
+    { id: 'bias_delta', label: 'Bias Delta (Δ)', badge: 'Error Corr.', color: '#10b981' },
+    { id: 'heavy_prob', label: 'Heavy Rain Prob', badge: '≥64.5mm', color: '#f59e0b' },
+    { id: 'regime', label: 'Monsoon Regime', badge: 'Synoptic', color: '#8b5cf6' },
+    { id: 'uncertainty', label: 'Uncertainty Width', badge: 'P90 - P10', color: '#ec4899' },
+  ];
+
   return (
     <div
       ref={wrapperRef}
@@ -443,6 +516,48 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
           <p className="text-xs text-[#94a3b8] max-w-md mb-4">{errorMessage}</p>
         </div>
       )}
+
+      {/* Demo Mode Overlay Banner */}
+      {isDemo && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+          <div className="flex items-center gap-2 bg-[#0e121a]/90 backdrop-blur-md border border-[#f59e0b]/50 px-3 py-1 rounded-full text-[10px] font-mono text-[#f59e0b] shadow-lg">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] animate-pulse" />
+            <span className="font-bold uppercase tracking-wider">DEMO DATA · SYNTHETIC / FALLBACK MODE</span>
+          </div>
+        </div>
+      )}
+
+      {/* Floating 6-Layer Selector Bar (Top-Left) */}
+      <div className="absolute top-3 left-3 z-20 hidden sm:flex items-center gap-1 bg-[#0a0d14]/90 backdrop-blur-md border border-[#1e2638] p-1 rounded-md shadow-xl">
+        <div className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono uppercase text-[#64748b] border-r border-[#1e2638]">
+          <Layers className="w-3.5 h-3.5 text-[#00e5ff]" />
+          <span>Layer:</span>
+        </div>
+        {RAINFALL_LAYERS.map((layer) => {
+          const isActive = activeLayer === layer.id;
+          return (
+            <button
+              key={layer.id}
+              type="button"
+              onClick={() => onSelectLayer?.(layer.id)}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded text-[11px] font-mono transition-all ${
+                isActive
+                  ? 'bg-[#151d2d] text-white font-bold border shadow-sm'
+                  : 'text-[#94a3b8] hover:text-white hover:bg-[#121622]'
+              }`}
+              style={{
+                borderColor: isActive ? layer.color : 'transparent',
+              }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: layer.color }}
+              />
+              <span>{layer.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* Minimal Floating Map Controls (Top-Right) */}
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-1.5 bg-[#0e121a]/85 backdrop-blur-md border border-[#1e2638] p-1 rounded-md shadow-lg">
@@ -499,36 +614,203 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
         </button>
       </div>
 
-      {/* 4-Layer Geospatial Active Legend (Bottom-Left) */}
-      <div className="absolute bottom-3 left-3 z-20 bg-[#0e121a]/90 backdrop-blur-md border border-[#1e2638] px-3 py-2 rounded-md shadow-lg text-[11px] font-mono space-y-1.5">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#00e5ff] border border-white" />
-          <span className="text-white">Selected Point: {locationName}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-3.5 h-2.5 rounded-sm bg-[#00b4d8]/40 border border-[#00e5ff]" />
-          <span className="text-[#cbd5e1]">
-            Detected Surface Water / Model 2 Water Segmentation {polygonCount > 0 ? `(${polygonCount} vectors)` : '(0 vectors)'}
+      {/* Geospatial Active Layer Dynamic Legend (Bottom-Left) */}
+      <div className="absolute bottom-3 left-3 z-20 bg-[#0e121a]/90 backdrop-blur-md border border-[#1e2638] px-3 py-2 rounded-md shadow-lg text-[11px] font-mono space-y-1.5 max-w-xs">
+        <div className="flex items-center justify-between border-b border-[#1e2638] pb-1">
+          <div className="flex items-center gap-1.5">
+            <span
+              className="w-2.5 h-2.5 rounded-full"
+              style={{
+                backgroundColor:
+                  activeLayer === 'ai_calibrated'
+                    ? '#00e5ff'
+                    : activeLayer === 'bias_delta'
+                    ? '#10b981'
+                    : activeLayer === 'heavy_prob'
+                    ? '#f59e0b'
+                    : activeLayer === 'regime'
+                    ? '#8b5cf6'
+                    : activeLayer === 'uncertainty'
+                    ? '#ec4899'
+                    : '#94a3b8',
+              }}
+            />
+            <span className="text-white font-bold uppercase text-[10px]">
+              {RAINFALL_LAYERS.find((l) => l.id === activeLayer)?.label || 'Rainfall Layer'}
+            </span>
+          </div>
+          <span className="text-[10px] text-[#00e5ff] uppercase font-bold">
+            {locationName}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${terrainLoaded ? 'bg-[#10b981]' : 'bg-[#94a3b8]'}`} />
-          <span className="text-[#94a3b8]">
-            {terrainLoaded ? '3D World Terrain Active' : '3D Terrain Unavailable'}
+
+        {/* Dynamic Scale indicator according to activeLayer */}
+        {activeLayer === 'ai_calibrated' && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#cbd5e1]">
+              <span>Calibrated 24h:</span>
+              <span className="font-bold text-[#00e5ff]">{formatNumber(forecastSummary?.correctedMm ?? 0, 1)} mm</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-gradient-to-r from-[#0284c7]/40 via-[#00e5ff] to-[#f59e0b]" />
+            <div className="flex justify-between text-[9px] text-[#64748b]">
+              <span>0mm</span>
+              <span>35mm</span>
+              <span>64.5mm</span>
+              <span>115.5mm+</span>
+            </div>
+          </div>
+        )}
+
+        {activeLayer === 'raw_nwp' && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#cbd5e1]">
+              <span>Raw NWP (Baseline):</span>
+              <span className="font-bold text-white">{formatNumber(forecastSummary?.rawNwpMm ?? 0, 1)} mm</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-gradient-to-r from-[#334155] via-[#64748b] to-[#94a3b8]" />
+            <div className="flex justify-between text-[9px] text-[#64748b]">
+              <span>0mm</span>
+              <span>30mm</span>
+              <span>60mm</span>
+              <span>100mm+</span>
+            </div>
+          </div>
+        )}
+
+        {activeLayer === 'bias_delta' && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#cbd5e1]">
+              <span>AI Correction Δ:</span>
+              <span className="font-bold text-[#10b981]">
+                {(forecastSummary?.deltaMm ?? 0) >= 0 ? '+' : ''}
+                {formatNumber(forecastSummary?.deltaMm ?? 0, 1)} mm
+              </span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-gradient-to-r from-[#ef4444] via-[#64748b] to-[#10b981]" />
+            <div className="flex justify-between text-[9px] text-[#64748b]">
+              <span>-30mm (Dampen)</span>
+              <span>0mm</span>
+              <span>+30mm (Enhance)</span>
+            </div>
+          </div>
+        )}
+
+        {activeLayer === 'heavy_prob' && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#cbd5e1]">
+              <span>P(≥64.5mm Heavy):</span>
+              <span className="font-bold text-[#f59e0b]">{Math.round((forecastSummary?.heavyProb ?? 0) * 100)}%</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-gradient-to-r from-[#1e293b] via-[#f59e0b] to-[#ef4444]" />
+            <div className="flex justify-between text-[9px] text-[#64748b]">
+              <span>0% Low</span>
+              <span>50% Watch</span>
+              <span>80%+ Warning</span>
+            </div>
+          </div>
+        )}
+
+        {activeLayer === 'regime' && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#cbd5e1]">
+              <span>Monsoon Regime:</span>
+              <span className="font-bold text-[#8b5cf6]">{forecastSummary?.regime || 'Active Monsoon'}</span>
+            </div>
+            <div className="text-[9px] text-[#94a3b8]">
+              Synoptically diagnosed dynamical regime
+            </div>
+          </div>
+        )}
+
+        {activeLayer === 'uncertainty' && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#cbd5e1]">
+              <span>Uncertainty Width:</span>
+              <span className="font-bold text-[#ec4899]">{formatNumber(forecastSummary?.uncertaintyWidth ?? 0, 1)} mm</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-gradient-to-r from-[#0284c7] via-[#ec4899] to-[#ef4444]" />
+            <div className="flex justify-between text-[9px] text-[#64748b]">
+              <span>Narrow (High Conf)</span>
+              <span>Wide (Spread)</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between text-[9px] text-[#64748b] pt-1 border-t border-[#1e2638]">
+          <span className="flex items-center gap-1">
+            <span className={`w-1.5 h-1.5 rounded-full ${terrainLoaded ? 'bg-[#10b981]' : 'bg-[#94a3b8]'}`} />
+            3D Terrain
           </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${satelliteLoaded ? 'bg-[#10b981]' : 'bg-[#94a3b8]'}`} />
-          <span className="text-[#94a3b8]">Esri World Satellite Imagery</span>
+          <span className="flex items-center gap-1">
+            <span className={`w-1.5 h-1.5 rounded-full ${satelliteLoaded ? 'bg-[#10b981]' : 'bg-[#94a3b8]'}`} />
+            Esri World Imagery
+          </span>
         </div>
       </div>
 
+      {/* Inspected Point Popover (When clicking anywhere on the globe) */}
+      {inspectedLocation && (
+        <div className="absolute top-14 right-3 z-20 bg-[#0f131d]/95 backdrop-blur-md border border-[#00e5ff]/50 p-3.5 rounded-md shadow-2xl max-w-xs text-xs space-y-2">
+          <div className="flex items-center justify-between border-b border-[#1e2638] pb-1.5">
+            <div className="flex items-center gap-1.5 text-[#00e5ff] font-mono font-bold uppercase tracking-wide text-[11px]">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Inspected Coordinates</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setInspectedLocation(null)}
+              className="text-[#64748b] hover:text-white text-xs px-1"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-1 font-mono text-[11px]">
+            <div className="flex justify-between">
+              <span className="text-[#94a3b8]">Lat / Lon:</span>
+              <span className="text-white font-semibold">{formatCoordinates(inspectedLocation.lat, inspectedLocation.lon)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#94a3b8]">Regime:</span>
+              <span className="text-[#8b5cf6] font-semibold">{forecastSummary?.regime || 'Active Monsoon'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#94a3b8]">Raw NWP:</span>
+              <span className="text-white">{formatNumber(forecastSummary?.rawNwpMm ?? 0, 1)} mm</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#94a3b8]">AI Calibrated:</span>
+              <span className="text-[#00e5ff] font-bold">{formatNumber(forecastSummary?.correctedMm ?? 0, 1)} mm</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#94a3b8]">Bias Delta (Δ):</span>
+              <span className="text-[#10b981]">
+                {(forecastSummary?.deltaMm ?? 0) >= 0 ? '+' : ''}
+                {formatNumber(forecastSummary?.deltaMm ?? 0, 1)} mm
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#94a3b8]">Heavy Rain Prob:</span>
+              <span className="text-[#f59e0b] font-semibold">{Math.round((forecastSummary?.heavyProb ?? 0) * 100)}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#94a3b8]">Data Status:</span>
+              <span className="text-[#f59e0b] font-semibold">{isDemo ? 'DEMO FALLBACK' : 'OPERATIONAL'}</span>
+            </div>
+          </div>
+
+          <div className="text-[10px] text-[#64748b] border-t border-[#1e2638] pt-1 mt-1">
+            Click any point on the 3D globe to inspect local forecast & regime telemetry.
+          </div>
+        </div>
+      )}
+
       {/* Polygon Inspection Popover (when user clicks an inundation vector) */}
       {selectedPolygonMeta && (
-        <div className="absolute top-3 left-3 z-20 bg-[#0f131d]/95 backdrop-blur-md border border-[#00e5ff]/40 p-3 rounded-md shadow-2xl max-w-xs text-xs">
+        <div className="absolute top-14 left-3 z-20 bg-[#0f131d]/95 backdrop-blur-md border border-[#00e5ff]/40 p-3 rounded-md shadow-2xl max-w-xs text-xs">
           <div className="flex items-center justify-between border-b border-[#1e2638] pb-1.5 mb-2">
             <span className="font-bold text-[#00e5ff] uppercase tracking-wider text-[11px]">
-              Detected Surface Water Polygon (Model 2)
+              Detected Surface Water Polygon
             </span>
             <button
               type="button"
@@ -547,14 +829,6 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
                 </span>
               </div>
             )}
-            {selectedPolygonMeta.perimeter_m !== undefined && (
-              <div className="flex justify-between">
-                <span className="text-[#94a3b8]">Perimeter:</span>
-                <span className="text-white font-semibold">
-                  {Math.round(Number(selectedPolygonMeta.perimeter_m))} m
-                </span>
-              </div>
-            )}
             {selectedPolygonMeta.water_type !== undefined && (
               <div className="flex justify-between">
                 <span className="text-[#94a3b8]">Classification:</span>
@@ -563,25 +837,6 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
                 </span>
               </div>
             )}
-            {selectedPolygonMeta.scene_id !== undefined && (
-              <div className="flex justify-between gap-2">
-                <span className="text-[#94a3b8]">Scene ID:</span>
-                <span className="text-white truncate max-w-[140px]" title={String(selectedPolygonMeta.scene_id)}>
-                  {String(selectedPolygonMeta.scene_id)}
-                </span>
-              </div>
-            )}
-            {selectedPolygonMeta.source !== undefined && (
-              <div className="flex justify-between gap-2">
-                <span className="text-[#94a3b8]">Source:</span>
-                <span className="text-white truncate max-w-[140px]">
-                  {String(selectedPolygonMeta.source)}
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="text-[10px] text-[#64748b] border-t border-[#1e2638] pt-1.5 mt-2">
-            Historical Satellite Baseline · Model 2 Water Segmentation (includes permanent water)
           </div>
         </div>
       )}

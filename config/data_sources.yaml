@@ -1,0 +1,92 @@
+# ==============================================================================
+# PS26080: METEOROLOGICAL DATA SOURCE CONFIGURATION & REGISTRY
+# Ministry of Earth Sciences (MoES) / NCMRWF
+# ==============================================================================
+
+version: "2.0.0"
+operational_agency: "NCMRWF / IMD / MoES"
+
+sources:
+  ncmrwf_ncum:
+    name: "NCMRWF Unified Model (NCUM)"
+    role: "OPERATIONAL_NWP_TARGET"
+    spatial_resolution_km: 12.0
+    forecast_horizon_hours: 168
+    grid_type: "Global / Regional South Asia"
+    parameters: ["precip", "u", "v", "t", "q", "z", "omega", "mslp", "cape"]
+    is_live_operational: false # Explicit flag indicating if live NCMRWF ingestion is connected
+    access_protocol: "FTP/OPeNDAP (Internal MoES Network)"
+    fallback_source: "gfs_openmeteo"
+
+  ncmrwf_neps:
+    name: "NCMRWF Ensemble Prediction System (NEPS)"
+    role: "OPERATIONAL_ENSEMBLE_TARGET"
+    ensemble_members: 23
+    spatial_resolution_km: 12.0
+    forecast_horizon_hours: 240
+    is_live_operational: false
+    access_protocol: "Internal NCMRWF Push"
+    fallback_source: "gfs_openmeteo"
+
+  era5:
+    name: "ECMWF ERA5 Atmospheric Reanalysis"
+    role: "SYNOPTIC_BENCHMARK_REANALYSIS"
+    spatial_resolution_deg: 0.25
+    temporal_resolution: "Hourly"
+    parameters: ["u850", "v850", "u700", "v700", "u500", "v500", "z500", "t2m", "tp", "msl"]
+    is_live_operational: true
+    adapter: "cdsapi / Open-Meteo Historical Archive"
+
+  imd_observations:
+    name: "India Meteorological Department Daily Gridded Rainfall"
+    role: "GROUND_TRUTH_OBSERVATIONS"
+    spatial_resolution_deg: 0.25
+    domain: [6.5, 38.5, 66.5, 100.0]
+    is_live_operational: true
+    units: "mm/day"
+    latency_days: 1
+
+  imerg:
+    name: "NASA GPM IMERG Late/Final Precipitation"
+    role: "SATELLITE_PRECIPITATION_ESTIMATE"
+    spatial_resolution_deg: 0.1
+    temporal_resolution: "30-min / Daily"
+    is_live_operational: true
+    units: "mm/hr"
+
+  gfs_openmeteo:
+    name: "NOAA Global Forecast System (GFS 0.25°) via Open-Meteo"
+    role: "DEVELOPMENT_DEMO_FALLBACK"
+    spatial_resolution_deg: 0.25
+    forecast_horizon_hours: 168
+    is_live_operational: true
+    is_demo_fallback: true
+    attribution: "Open-Meteo GFS Seamless (Development & Fallback Only - NOT Live NCMRWF)"
+
+  terrain_srtm:
+    name: "SRTM 90m Digital Elevation Model"
+    role: "STATIC_GEOGRAPHIC_TOPOGRAPHY"
+    derived_fields: ["elevation", "slope", "aspect", "terrain_roughness", "distance_to_coast"]
+    is_live_operational: true
+
+  districts_india:
+    name: "Survey of India Administrative District Boundaries"
+    role: "ADMINISTRATIVE_GEOJSON"
+    district_count: 766
+    is_live_operational: true
+
+spatial_grid:
+  canonical_crs: "EPSG:4326"
+  standard_grid_resolution_deg: 0.25
+  lat_min: 6.0
+  lat_max: 38.0
+  lon_min: 66.0
+  lon_max: 100.0
+
+quality_control:
+  max_valid_daily_rainfall_mm: 1500.0 # World record check (Cherrapunji)
+  max_valid_wind_speed_ms: 120.0 # Cyclone category 5 upper envelope
+  min_valid_humidity_pct: 0.0
+  max_valid_humidity_pct: 100.0
+  min_valid_mslp_hpa: 870.0
+  max_valid_mslp_hpa: 1085.0

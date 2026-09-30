@@ -1,4 +1,4 @@
-"""Data contracts and validation schemas."""
+"""Data contracts and validation schemas for PS26080 (MoES / NCMRWF)."""
 
 from backend.app.schemas.common import (
     ConnectionStatus,
@@ -16,6 +16,15 @@ from backend.app.schemas.nwp import (
     NWPForecastSummary,
     NWPGridData,
     NWPPointForecastResponse,
+)
+from backend.app.schemas.postprocess import (
+    DistrictForecast,
+    HeavyRainfallProbabilities,
+    PostProcessingComparison,
+    ProductDetail,
+    ProbabilityTier,
+    VerificationMetricSet,
+    VerificationResponse,
 )
 from backend.app.schemas.prediction import (
     InundationPipelineRequest,
@@ -37,6 +46,11 @@ from backend.app.schemas.radar import (
     RadarObservation,
     RadarReflectivityGrid,
     RadarTileReflectivity,
+)
+from backend.app.schemas.regime import (
+    RegimeResponse,
+    SynopticFeatures,
+    WeatherRegimeType,
 )
 from backend.app.schemas.response import AnalysisResponse, BaseApiResponse
 from backend.app.schemas.risk import (
@@ -65,6 +79,18 @@ from backend.app.schemas.satellite import (
     Sentinel2Bands,
     Sentinel2SceneMetadata,
 )
+from backend.app.schemas.unified import (
+    SourceStatusDetail,
+    UnifiedInundationSummary,
+    UnifiedNwpSummary,
+    UnifiedPredictionRequest,
+    UnifiedPredictionResponse,
+    UnifiedRadarSummary,
+    UnifiedRainfallSummary,
+    UnifiedRiskSummary,
+    UnifiedSpatialContours,
+    UnifiedTimingDetail,
+)
 from backend.app.schemas.warning import (
     AlertAction,
     AlertSeverity,
@@ -77,17 +103,6 @@ from backend.app.schemas.warning import (
     WarningProvenance,
     WarningStatus,
     WarningUrgency,
-)
-from backend.app.schemas.unified import (
-    SourceStatusDetail,
-    UnifiedInundationSummary,
-    UnifiedNwpSummary,
-    UnifiedPredictionRequest,
-    UnifiedPredictionResponse,
-    UnifiedRadarSummary,
-    UnifiedRainfallSummary,
-    UnifiedRiskSummary,
-    UnifiedTimingDetail,
 )
 from backend.app.schemas.weather import (
     DailyWeatherRecord,
@@ -105,11 +120,13 @@ __all__ = [
     "Coordinates",
     "DailyWeatherRecord",
     "DataSourceStatus",
+    "DistrictForecast",
     "ErrorDetail",
     "ErrorResponse",
     "EvidenceFreshness",
     "FusionMetadata",
     "GeoBoundingBox",
+    "HeavyRainfallProbabilities",
     "InundationGeoJsonFeature",
     "InundationGeoJsonResponse",
     "InundationPipelineRequest",
@@ -129,6 +146,9 @@ __all__ = [
     "NWPPointForecastResponse",
     "NwpEvidence",
     "PhysicalTrigger",
+    "PostProcessingComparison",
+    "ProbabilityTier",
+    "ProductDetail",
     "PrototypeWarningCandidate",
     "RadarDataResponse",
     "RadarEvidence",
@@ -142,6 +162,7 @@ __all__ = [
     "RainfallPrediction",
     "RainfallPredictionRequest",
     "RainfallPredictionResponse",
+    "RegimeResponse",
     "RiskAssessment",
     "RiskAssessmentRequest",
     "RiskAssessmentResponse",
@@ -156,6 +177,7 @@ __all__ = [
     "SourceExplanation",
     "SourceStatusDetail",
     "SpatialRiskGrid",
+    "SynopticFeatures",
     "UnifiedInundationSummary",
     "UnifiedNwpSummary",
     "UnifiedPredictionRequest",
@@ -163,7 +185,10 @@ __all__ = [
     "UnifiedRadarSummary",
     "UnifiedRainfallSummary",
     "UnifiedRiskSummary",
+    "UnifiedSpatialContours",
     "UnifiedTimingDetail",
+    "VerificationMetricSet",
+    "VerificationResponse",
     "WarningAlert",
     "WarningAssessmentRequest",
     "WarningDecision",
@@ -173,4 +198,5 @@ __all__ = [
     "WarningUrgency",
     "WeatherFeatureVector",
     "WeatherObservation",
+    "WeatherRegimeType",
 ]

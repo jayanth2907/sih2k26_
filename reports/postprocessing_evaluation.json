@@ -1,0 +1,1343 @@
+{
+  "metadata": {
+    "evaluation_period": "2024\u20132025 Monsoon Seasons (JJAS)",
+    "sample_count": 800,
+    "generated_at": "2026-09-30T09:52:27.933049+00:00",
+    "target_problem": "SIH26080 \u2014 Regime-Aware AI Post-Processing of Monsoon Rainfall Forecasts",
+    "evaluating_agency": "MoES / NCMRWF"
+  },
+  "overall_metrics": {
+    "raw_nwp": {
+      "model_id": "raw_nwp",
+      "sample_count": 800,
+      "rmse_mm": 24.83,
+      "mae_mm": 19.06,
+      "mean_bias_mm": -17.08,
+      "pod": 0.291,
+      "far": 0.0,
+      "csi": 0.291,
+      "ets": 0.25,
+      "fss_50km": 0.502,
+      "threshold_metrics": {
+        "64.5mm": {
+          "pod": 0.291,
+          "far": 0.0,
+          "csi": 0.291,
+          "ets": 0.25,
+          "hits": 43.0,
+          "misses": 105.0,
+          "false_alarms": 0.0
+        },
+        "115.6mm": {
+          "pod": 0.024,
+          "far": 0.0,
+          "csi": 0.024,
+          "ets": 0.023,
+          "hits": 1.0,
+          "misses": 41.0,
+          "false_alarms": 0.0
+        },
+        "204.5mm": {
+          "pod": 0.0,
+          "far": 0.0,
+          "csi": 0.0,
+          "ets": 0.0,
+          "hits": 0.0,
+          "misses": 1.0,
+          "false_alarms": 0.0
+        }
+      }
+    },
+    "quantile_mapping": {
+      "model_id": "quantile_mapping",
+      "sample_count": 800,
+      "rmse_mm": 12.29,
+      "mae_mm": 9.54,
+      "mean_bias_mm": -0.25,
+      "pod": 0.831,
+      "far": 0.102,
+      "csi": 0.759,
+      "ets": 0.715,
+      "fss_50km": 0.922,
+      "threshold_metrics": {
+        "64.5mm": {
+          "pod": 0.831,
+          "far": 0.102,
+          "csi": 0.759,
+          "ets": 0.715,
+          "hits": 123.0,
+          "misses": 25.0,
+          "false_alarms": 14.0
+        },
+        "115.6mm": {
+          "pod": 0.857,
+          "far": 0.077,
+          "csi": 0.8,
+          "ets": 0.79,
+          "hits": 36.0,
+          "misses": 6.0,
+          "false_alarms": 3.0
+        },
+        "204.5mm": {
+          "pod": 0.0,
+          "far": 1.0,
+          "csi": 0.0,
+          "ets": -0.001,
+          "hits": 0.0,
+          "misses": 1.0,
+          "false_alarms": 1.0
+        }
+      }
+    },
+    "global_ml": {
+      "model_id": "global_ml",
+      "sample_count": 800,
+      "rmse_mm": 5.79,
+      "mae_mm": 3.47,
+      "mean_bias_mm": 0.33,
+      "pod": 0.912,
+      "far": 0.069,
+      "csi": 0.854,
+      "ets": 0.825,
+      "fss_50km": 0.961,
+      "threshold_metrics": {
+        "64.5mm": {
+          "pod": 0.912,
+          "far": 0.069,
+          "csi": 0.854,
+          "ets": 0.825,
+          "hits": 135.0,
+          "misses": 13.0,
+          "false_alarms": 10.0
+        },
+        "115.6mm": {
+          "pod": 0.929,
+          "far": 0.093,
+          "csi": 0.848,
+          "ets": 0.84,
+          "hits": 39.0,
+          "misses": 3.0,
+          "false_alarms": 4.0
+        },
+        "204.5mm": {
+          "pod": 1.0,
+          "far": 0.5,
+          "csi": 0.5,
+          "ets": 0.499,
+          "hits": 1.0,
+          "misses": 0.0,
+          "false_alarms": 1.0
+        }
+      }
+    },
+    "regime_aware_ml": {
+      "model_id": "regime_aware_ml",
+      "sample_count": 800,
+      "rmse_mm": 5.68,
+      "mae_mm": 3.89,
+      "mean_bias_mm": -0.12,
+      "pod": 0.899,
+      "far": 0.036,
+      "csi": 0.869,
+      "ets": 0.843,
+      "fss_50km": 0.957,
+      "threshold_metrics": {
+        "64.5mm": {
+          "pod": 0.899,
+          "far": 0.036,
+          "csi": 0.869,
+          "ets": 0.843,
+          "hits": 133.0,
+          "misses": 15.0,
+          "false_alarms": 5.0
+        },
+        "115.6mm": {
+          "pod": 0.881,
+          "far": 0.075,
+          "csi": 0.822,
+          "ets": 0.814,
+          "hits": 37.0,
+          "misses": 5.0,
+          "false_alarms": 3.0
+        },
+        "204.5mm": {
+          "pod": 1.0,
+          "far": 0.0,
+          "csi": 1.0,
+          "ets": 1.0,
+          "hits": 1.0,
+          "misses": 0.0,
+          "false_alarms": 0.0
+        }
+      }
+    }
+  },
+  "regime_breakdowns": {
+    "ALL_SAMPLES": {
+      "raw_nwp": {
+        "model_id": "raw_nwp",
+        "sample_count": 800,
+        "rmse_mm": 24.83,
+        "mae_mm": 19.06,
+        "mean_bias_mm": -17.08,
+        "pod": 0.291,
+        "far": 0.0,
+        "csi": 0.291,
+        "ets": 0.25,
+        "fss_50km": 0.502,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.291,
+            "far": 0.0,
+            "csi": 0.291,
+            "ets": 0.25,
+            "hits": 43.0,
+            "misses": 105.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.024,
+            "far": 0.0,
+            "csi": 0.024,
+            "ets": 0.023,
+            "hits": 1.0,
+            "misses": 41.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 1.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "quantile_mapping": {
+        "model_id": "quantile_mapping",
+        "sample_count": 800,
+        "rmse_mm": 12.29,
+        "mae_mm": 9.54,
+        "mean_bias_mm": -0.25,
+        "pod": 0.831,
+        "far": 0.102,
+        "csi": 0.759,
+        "ets": 0.715,
+        "fss_50km": 0.922,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.831,
+            "far": 0.102,
+            "csi": 0.759,
+            "ets": 0.715,
+            "hits": 123.0,
+            "misses": 25.0,
+            "false_alarms": 14.0
+          },
+          "115.6mm": {
+            "pod": 0.857,
+            "far": 0.077,
+            "csi": 0.8,
+            "ets": 0.79,
+            "hits": 36.0,
+            "misses": 6.0,
+            "false_alarms": 3.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 1.0,
+            "csi": 0.0,
+            "ets": -0.001,
+            "hits": 0.0,
+            "misses": 1.0,
+            "false_alarms": 1.0
+          }
+        }
+      },
+      "global_ml": {
+        "model_id": "global_ml",
+        "sample_count": 800,
+        "rmse_mm": 5.79,
+        "mae_mm": 3.47,
+        "mean_bias_mm": 0.33,
+        "pod": 0.912,
+        "far": 0.069,
+        "csi": 0.854,
+        "ets": 0.825,
+        "fss_50km": 0.961,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.912,
+            "far": 0.069,
+            "csi": 0.854,
+            "ets": 0.825,
+            "hits": 135.0,
+            "misses": 13.0,
+            "false_alarms": 10.0
+          },
+          "115.6mm": {
+            "pod": 0.929,
+            "far": 0.093,
+            "csi": 0.848,
+            "ets": 0.84,
+            "hits": 39.0,
+            "misses": 3.0,
+            "false_alarms": 4.0
+          },
+          "204.5mm": {
+            "pod": 1.0,
+            "far": 0.5,
+            "csi": 0.5,
+            "ets": 0.499,
+            "hits": 1.0,
+            "misses": 0.0,
+            "false_alarms": 1.0
+          }
+        }
+      },
+      "regime_aware_ml": {
+        "model_id": "regime_aware_ml",
+        "sample_count": 800,
+        "rmse_mm": 5.68,
+        "mae_mm": 3.89,
+        "mean_bias_mm": -0.12,
+        "pod": 0.899,
+        "far": 0.036,
+        "csi": 0.869,
+        "ets": 0.843,
+        "fss_50km": 0.957,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.899,
+            "far": 0.036,
+            "csi": 0.869,
+            "ets": 0.843,
+            "hits": 133.0,
+            "misses": 15.0,
+            "false_alarms": 5.0
+          },
+          "115.6mm": {
+            "pod": 0.881,
+            "far": 0.075,
+            "csi": 0.822,
+            "ets": 0.814,
+            "hits": 37.0,
+            "misses": 5.0,
+            "false_alarms": 3.0
+          },
+          "204.5mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 1.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      }
+    },
+    "ACTIVE_MONSOON": {
+      "raw_nwp": {
+        "model_id": "raw_nwp",
+        "sample_count": 72,
+        "rmse_mm": 17.98,
+        "mae_mm": 16.47,
+        "mean_bias_mm": -16.47,
+        "pod": 0.417,
+        "far": 0.0,
+        "csi": 0.417,
+        "ets": 0.373,
+        "fss_50km": 0.59,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.417,
+            "far": 0.0,
+            "csi": 0.417,
+            "ets": 0.373,
+            "hits": 5.0,
+            "misses": 7.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.25,
+            "far": 0.0,
+            "csi": 0.25,
+            "ets": 0.239,
+            "hits": 1.0,
+            "misses": 3.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "quantile_mapping": {
+        "model_id": "quantile_mapping",
+        "sample_count": 72,
+        "rmse_mm": 13.78,
+        "mae_mm": 11.35,
+        "mean_bias_mm": 11.35,
+        "pod": 1.0,
+        "far": 0.368,
+        "csi": 0.632,
+        "ets": 0.558,
+        "fss_50km": 0.878,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 1.0,
+            "far": 0.368,
+            "csi": 0.632,
+            "ets": 0.558,
+            "hits": 12.0,
+            "misses": 0.0,
+            "false_alarms": 7.0
+          },
+          "115.6mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 4.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 1.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 1.0
+          }
+        }
+      },
+      "global_ml": {
+        "model_id": "global_ml",
+        "sample_count": 72,
+        "rmse_mm": 5.34,
+        "mae_mm": 3.7,
+        "mean_bias_mm": 0.4,
+        "pod": 0.833,
+        "far": 0.0,
+        "csi": 0.833,
+        "ets": 0.806,
+        "fss_50km": 0.953,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.833,
+            "far": 0.0,
+            "csi": 0.833,
+            "ets": 0.806,
+            "hits": 10.0,
+            "misses": 2.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 4.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "regime_aware_ml": {
+        "model_id": "regime_aware_ml",
+        "sample_count": 72,
+        "rmse_mm": 4.67,
+        "mae_mm": 3.68,
+        "mean_bias_mm": 2.39,
+        "pod": 0.917,
+        "far": 0.0,
+        "csi": 0.917,
+        "ets": 0.902,
+        "fss_50km": 0.977,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.917,
+            "far": 0.0,
+            "csi": 0.917,
+            "ets": 0.902,
+            "hits": 11.0,
+            "misses": 1.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 4.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      }
+    },
+    "BREAK_MONSOON": {
+      "raw_nwp": {
+        "model_id": "raw_nwp",
+        "sample_count": 128,
+        "rmse_mm": 7.39,
+        "mae_mm": 6.2,
+        "mean_bias_mm": 6.2,
+        "pod": 0.0,
+        "far": 0.0,
+        "csi": 0.0,
+        "ets": 0.0,
+        "fss_50km": 1.0,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "quantile_mapping": {
+        "model_id": "quantile_mapping",
+        "sample_count": 128,
+        "rmse_mm": 16.46,
+        "mae_mm": 13.16,
+        "mean_bias_mm": 13.16,
+        "pod": 0.0,
+        "far": 0.0,
+        "csi": 0.0,
+        "ets": 0.0,
+        "fss_50km": 1.0,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "global_ml": {
+        "model_id": "global_ml",
+        "sample_count": 128,
+        "rmse_mm": 1.97,
+        "mae_mm": 1.36,
+        "mean_bias_mm": 0.23,
+        "pod": 0.0,
+        "far": 0.0,
+        "csi": 0.0,
+        "ets": 0.0,
+        "fss_50km": 1.0,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "regime_aware_ml": {
+        "model_id": "regime_aware_ml",
+        "sample_count": 128,
+        "rmse_mm": 2.93,
+        "mae_mm": 2.3,
+        "mean_bias_mm": 2.06,
+        "pod": 0.0,
+        "far": 0.0,
+        "csi": 0.0,
+        "ets": 0.0,
+        "fss_50km": 1.0,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      }
+    },
+    "COASTAL_CONVERGENCE": {
+      "raw_nwp": {
+        "model_id": "raw_nwp",
+        "sample_count": 200,
+        "rmse_mm": 21.04,
+        "mae_mm": 17.81,
+        "mean_bias_mm": -17.81,
+        "pod": 0.366,
+        "far": 0.0,
+        "csi": 0.366,
+        "ets": 0.314,
+        "fss_50km": 0.592,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.366,
+            "far": 0.0,
+            "csi": 0.366,
+            "ets": 0.314,
+            "hits": 15.0,
+            "misses": 26.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 11.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "quantile_mapping": {
+        "model_id": "quantile_mapping",
+        "sample_count": 200,
+        "rmse_mm": 8.02,
+        "mae_mm": 5.83,
+        "mean_bias_mm": 2.13,
+        "pod": 0.976,
+        "far": 0.111,
+        "csi": 0.87,
+        "ets": 0.837,
+        "fss_50km": 0.961,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.976,
+            "far": 0.111,
+            "csi": 0.87,
+            "ets": 0.837,
+            "hits": 40.0,
+            "misses": 1.0,
+            "false_alarms": 5.0
+          },
+          "115.6mm": {
+            "pod": 1.0,
+            "far": 0.214,
+            "csi": 0.786,
+            "ets": 0.773,
+            "hits": 11.0,
+            "misses": 0.0,
+            "false_alarms": 3.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "global_ml": {
+        "model_id": "global_ml",
+        "sample_count": 200,
+        "rmse_mm": 4.86,
+        "mae_mm": 3.42,
+        "mean_bias_mm": 1.45,
+        "pod": 0.976,
+        "far": 0.091,
+        "csi": 0.889,
+        "ets": 0.861,
+        "fss_50km": 0.966,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.976,
+            "far": 0.091,
+            "csi": 0.889,
+            "ets": 0.861,
+            "hits": 40.0,
+            "misses": 1.0,
+            "false_alarms": 4.0
+          },
+          "115.6mm": {
+            "pod": 0.909,
+            "far": 0.231,
+            "csi": 0.714,
+            "ets": 0.699,
+            "hits": 10.0,
+            "misses": 1.0,
+            "false_alarms": 3.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "regime_aware_ml": {
+        "model_id": "regime_aware_ml",
+        "sample_count": 200,
+        "rmse_mm": 4.81,
+        "mae_mm": 3.52,
+        "mean_bias_mm": 1.47,
+        "pod": 0.976,
+        "far": 0.048,
+        "csi": 0.93,
+        "ets": 0.913,
+        "fss_50km": 0.979,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.976,
+            "far": 0.048,
+            "csi": 0.93,
+            "ets": 0.913,
+            "hits": 40.0,
+            "misses": 1.0,
+            "false_alarms": 2.0
+          },
+          "115.6mm": {
+            "pod": 0.909,
+            "far": 0.231,
+            "csi": 0.714,
+            "ets": 0.699,
+            "hits": 10.0,
+            "misses": 1.0,
+            "false_alarms": 3.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      }
+    },
+    "MONSOON_LOW_LPS": {
+      "raw_nwp": {
+        "model_id": "raw_nwp",
+        "sample_count": 100,
+        "rmse_mm": 19.26,
+        "mae_mm": 16.4,
+        "mean_bias_mm": -16.4,
+        "pod": 0.125,
+        "far": 0.0,
+        "csi": 0.125,
+        "ets": 0.116,
+        "fss_50km": 0.212,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.125,
+            "far": 0.0,
+            "csi": 0.125,
+            "ets": 0.116,
+            "hits": 1.0,
+            "misses": 7.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 1.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "quantile_mapping": {
+        "model_id": "quantile_mapping",
+        "sample_count": 100,
+        "rmse_mm": 7.64,
+        "mae_mm": 6.51,
+        "mean_bias_mm": -5.85,
+        "pod": 0.875,
+        "far": 0.0,
+        "csi": 0.875,
+        "ets": 0.866,
+        "fss_50km": 0.971,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.875,
+            "far": 0.0,
+            "csi": 0.875,
+            "ets": 0.866,
+            "hits": 7.0,
+            "misses": 1.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 1.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "global_ml": {
+        "model_id": "global_ml",
+        "sample_count": 100,
+        "rmse_mm": 4.39,
+        "mae_mm": 3.07,
+        "mean_bias_mm": -0.47,
+        "pod": 1.0,
+        "far": 0.111,
+        "csi": 0.889,
+        "ets": 0.879,
+        "fss_50km": 0.963,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 1.0,
+            "far": 0.111,
+            "csi": 0.889,
+            "ets": 0.879,
+            "hits": 8.0,
+            "misses": 0.0,
+            "false_alarms": 1.0
+          },
+          "115.6mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 1.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "regime_aware_ml": {
+        "model_id": "regime_aware_ml",
+        "sample_count": 100,
+        "rmse_mm": 4.57,
+        "mae_mm": 3.11,
+        "mean_bias_mm": -0.83,
+        "pod": 0.875,
+        "far": 0.0,
+        "csi": 0.875,
+        "ets": 0.866,
+        "fss_50km": 0.971,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.875,
+            "far": 0.0,
+            "csi": 0.875,
+            "ets": 0.866,
+            "hits": 7.0,
+            "misses": 1.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 1.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      }
+    },
+    "OROGRAPHIC_RAINFALL": {
+      "raw_nwp": {
+        "model_id": "raw_nwp",
+        "sample_count": 200,
+        "rmse_mm": 39.42,
+        "mae_mm": 33.67,
+        "mean_bias_mm": -33.67,
+        "pod": 0.25,
+        "far": 0.0,
+        "csi": 0.25,
+        "ets": 0.171,
+        "fss_50km": 0.451,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.25,
+            "far": 0.0,
+            "csi": 0.25,
+            "ets": 0.171,
+            "hits": 19.0,
+            "misses": 57.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 23.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 1.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "quantile_mapping": {
+        "model_id": "quantile_mapping",
+        "sample_count": 200,
+        "rmse_mm": 15.25,
+        "mae_mm": 13.74,
+        "mean_bias_mm": -13.67,
+        "pod": 0.697,
+        "far": 0.0,
+        "csi": 0.697,
+        "ets": 0.588,
+        "fss_50km": 0.876,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.697,
+            "far": 0.0,
+            "csi": 0.697,
+            "ets": 0.588,
+            "hits": 53.0,
+            "misses": 23.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.739,
+            "far": 0.0,
+            "csi": 0.739,
+            "ets": 0.715,
+            "hits": 17.0,
+            "misses": 6.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 1.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "global_ml": {
+        "model_id": "global_ml",
+        "sample_count": 200,
+        "rmse_mm": 6.91,
+        "mae_mm": 5.01,
+        "mean_bias_mm": -0.86,
+        "pod": 0.882,
+        "far": 0.069,
+        "csi": 0.827,
+        "ets": 0.739,
+        "fss_50km": 0.961,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.882,
+            "far": 0.069,
+            "csi": 0.827,
+            "ets": 0.739,
+            "hits": 67.0,
+            "misses": 9.0,
+            "false_alarms": 5.0
+          },
+          "115.6mm": {
+            "pod": 0.913,
+            "far": 0.045,
+            "csi": 0.875,
+            "ets": 0.86,
+            "hits": 21.0,
+            "misses": 2.0,
+            "false_alarms": 1.0
+          },
+          "204.5mm": {
+            "pod": 1.0,
+            "far": 0.5,
+            "csi": 0.5,
+            "ets": 0.497,
+            "hits": 1.0,
+            "misses": 0.0,
+            "false_alarms": 1.0
+          }
+        }
+      },
+      "regime_aware_ml": {
+        "model_id": "regime_aware_ml",
+        "sample_count": 200,
+        "rmse_mm": 8.53,
+        "mae_mm": 6.25,
+        "mean_bias_mm": -4.4,
+        "pod": 0.842,
+        "far": 0.045,
+        "csi": 0.81,
+        "ets": 0.72,
+        "fss_50km": 0.953,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.842,
+            "far": 0.045,
+            "csi": 0.81,
+            "ets": 0.72,
+            "hits": 64.0,
+            "misses": 12.0,
+            "false_alarms": 3.0
+          },
+          "115.6mm": {
+            "pod": 0.826,
+            "far": 0.0,
+            "csi": 0.826,
+            "ets": 0.808,
+            "hits": 19.0,
+            "misses": 4.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 1.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      }
+    },
+    "WESTERN_DISTURBANCE": {
+      "raw_nwp": {
+        "model_id": "raw_nwp",
+        "sample_count": 100,
+        "rmse_mm": 16.27,
+        "mae_mm": 13.35,
+        "mean_bias_mm": -13.35,
+        "pod": 0.273,
+        "far": 0.0,
+        "csi": 0.273,
+        "ets": 0.25,
+        "fss_50km": 0.514,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.273,
+            "far": 0.0,
+            "csi": 0.273,
+            "ets": 0.25,
+            "hits": 3.0,
+            "misses": 8.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 3.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "quantile_mapping": {
+        "model_id": "quantile_mapping",
+        "sample_count": 100,
+        "rmse_mm": 8.52,
+        "mae_mm": 5.67,
+        "mean_bias_mm": 1.93,
+        "pod": 1.0,
+        "far": 0.154,
+        "csi": 0.846,
+        "ets": 0.827,
+        "fss_50km": 0.964,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 1.0,
+            "far": 0.154,
+            "csi": 0.846,
+            "ets": 0.827,
+            "hits": 11.0,
+            "misses": 0.0,
+            "false_alarms": 2.0
+          },
+          "115.6mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 3.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "global_ml": {
+        "model_id": "global_ml",
+        "sample_count": 100,
+        "rmse_mm": 8.96,
+        "mae_mm": 3.45,
+        "mean_bias_mm": 1.36,
+        "pod": 0.909,
+        "far": 0.0,
+        "csi": 0.909,
+        "ets": 0.899,
+        "fss_50km": 0.993,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 0.909,
+            "far": 0.0,
+            "csi": 0.909,
+            "ets": 0.899,
+            "hits": 10.0,
+            "misses": 1.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 3.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      },
+      "regime_aware_ml": {
+        "model_id": "regime_aware_ml",
+        "sample_count": 100,
+        "rmse_mm": 4.35,
+        "mae_mm": 2.87,
+        "mean_bias_mm": 1.41,
+        "pod": 1.0,
+        "far": 0.0,
+        "csi": 1.0,
+        "ets": 1.0,
+        "fss_50km": 1.0,
+        "threshold_metrics": {
+          "64.5mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 11.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "115.6mm": {
+            "pod": 1.0,
+            "far": 0.0,
+            "csi": 1.0,
+            "ets": 1.0,
+            "hits": 3.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          },
+          "204.5mm": {
+            "pod": 0.0,
+            "far": 0.0,
+            "csi": 0.0,
+            "ets": 0.0,
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0
+          }
+        }
+      }
+    }
+  },
+  "skill_gains": {
+    "rmse_reduction_vs_raw_pct": 77.1,
+    "ets_gain_vs_raw_pct": 237.2
+  }
+}
