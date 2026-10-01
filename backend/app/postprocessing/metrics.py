@@ -65,7 +65,7 @@ class VerificationReport(BaseModel):
     far: float
     csi: float
     ets: float
-    fss_50km: float
+    fss_50km: Optional[float] = None
 
     # Threshold-specific skill breakdown
     threshold_metrics: Dict[str, Dict[str, float]] = Field(default_factory=dict)
@@ -126,44 +126,125 @@ class PostProcessingVerificationEngine:
         observed_grid: np.ndarray,
         threshold_mm: float = 64.5,
         window_size: int = 5,
-    ) -> float:
+    ) -> Optional[float]:
         """
-        Compute Fractions Skill Score (FSS) over 2D spatial grid matrices.
+        Compute Fractions Skill Score (FSS) over 2D spatial grid matrices or 1D spatial sample vectors.
         FSS = 1 - (MSE_n / MSE_ref)
+
+        Parameters
+        ----------
+        forecast_grid : np.ndarray
+            Forecast rainfall field (2D grid or 1D array)
+        observed_grid : np.ndarray
+            Observed ground-truth rainfall field (matching dimensions)
+        threshold_mm : float
+            Precipitation event threshold (default 64.5 mm / 24h)
+        window_size : int
+            Neighborhood box filter size in grid cells (1 for 25km, 5 for 50km, 9 for 100km)
+
+        Returns
+        -------
+        Optional[float] : FSS score in [0.0, 1.0], or None if MSE_ref == 0 (NO_EVENT_REFERENCE).
         """
-        f_binary = (forecast_grid >= threshold_mm).astype(np.float64)
-        o_binary = (observed_grid >= threshold_mm).astype(np.float64)
+        f_binary = (np.asarray(forecast_grid) >= threshold_mm).astype(np.float64)
+        o_binary = (np.asarray(observed_grid) >= threshold_mm).astype(np.float64)
 
         if f_binary.ndim == 1:
-            # Reshape 1D array into square grid if needed
+            # Reshape 1D array into square grid if square, else 1D convolution
             side = int(math.isqrt(len(f_binary)))
             if side * side == len(f_binary):
                 f_binary = f_binary.reshape((side, side))
                 o_binary = o_binary.reshape((side, side))
             else:
-                # 1D moving average fallback
-                w = min(len(f_binary), window_size)
-                f_frac = np.convolve(f_binary, np.ones(w) / w, mode="same")
-                o_frac = np.convolve(o_binary, np.ones(w) / w, mode="same")
-                mse = np.mean((f_frac - o_frac) ** 2)
-                mse_ref = np.mean(f_frac ** 2) + np.mean(o_frac ** 2)
-                if mse_ref <= 1e-6:
-                    return 1.0 if np.array_equal(f_binary, o_binary) else 0.0
-                return round(float(max(0.0, 1.0 - (mse / mse_ref))), 3)
+                # 1D moving average fallback for continuous 1D spatial evaluations
+                w = min(len(f_binary), max(1, window_size))
+                if w == 1:
+                    f_frac = f_binary
+                    o_frac = o_binary
+                else:
+                    f_frac = np.convolve(f_binary, np.ones(w) / w, mode="same")
+                    o_frac = np.convolve(o_binary, np.ones(w) / w, mode="same")
+                mse = float(np.mean((f_frac - o_frac) ** 2))
+                mse_ref = float(np.mean(f_frac ** 2) + np.mean(o_frac ** 2))
+                if mse_ref <= 1e-7:
+                    return None
+                return round(float(max(0.0, min(1.0, 1.0 - (mse / mse_ref)))), 3)
 
         # 2D Spatial Box Smoothing
-        from scipy.ndimage import uniform_filter
-        f_frac = uniform_filter(f_binary, size=window_size, mode="constant")
-        o_frac = uniform_filter(o_binary, size=window_size, mode="constant")
+        if window_size <= 1:
+            f_frac = f_binary
+            o_frac = o_binary
+        else:
+            from scipy.ndimage import uniform_filter
+            f_frac = uniform_filter(f_binary, size=window_size, mode="constant", cval=0.0)
+            o_frac = uniform_filter(o_binary, size=window_size, mode="constant", cval=0.0)
 
-        mse = np.mean((f_frac - o_frac) ** 2)
-        mse_ref = np.mean(f_frac ** 2) + np.mean(o_frac ** 2)
+        mse = float(np.mean((f_frac - o_frac) ** 2))
+        mse_ref = float(np.mean(f_frac ** 2) + np.mean(o_frac ** 2))
 
-        if mse_ref <= 1e-6:
-            return 1.0 if np.array_equal(f_binary, o_binary) else 0.0
+        if mse_ref <= 1e-7:
+            return None
 
-        fss = max(0.0, 1.0 - (mse / mse_ref))
+        fss = max(0.0, min(1.0, 1.0 - (mse / mse_ref)))
         return round(float(fss), 3)
+
+    @classmethod
+    def compute_multi_scale_fss(
+        cls,
+        models_forecasts: Dict[str, np.ndarray],
+        observed: np.ndarray,
+        threshold_mm: float = 64.5,
+    ) -> Dict[str, Dict[str, any]]:
+        """
+        Compute spatial Fractions Skill Score across 25 km, 50 km, and 100 km neighborhood scales.
+
+        Scale to window mapping (on 0.25° ~ 25km evaluation grid):
+        - 25 km: window_size = 1 (1x1 cell, local spatial scale)
+        - 50 km: window_size = 5 (5x5 cells, 50km neighborhood box)
+        - 100 km: window_size = 9 (9x9 cells, 100km broader scale box)
+
+        Returns dictionary of scale results for each method.
+        """
+        scales_config = [
+            ("25km", 25, 1),
+            ("50km", 50, 5),
+            ("100km", 100, 9),
+        ]
+
+        obs_events = int(np.sum(observed >= threshold_mm))
+        total_cells = len(observed)
+
+        results = {}
+        for key, scale_km, w_size in scales_config:
+            scale_res = {
+                "scale_km": scale_km,
+                "window_size_cells": w_size,
+                "threshold_mm": threshold_mm,
+                "valid_grid_cells": total_cells,
+                "event_cells_observed": obs_events,
+            }
+            has_valid = False
+            for m_id, f_arr in models_forecasts.items():
+                score = cls.compute_fractions_skill_score(
+                    forecast_grid=f_arr,
+                    observed_grid=observed,
+                    threshold_mm=threshold_mm,
+                    window_size=w_size,
+                )
+                scale_res[m_id] = score
+                if score is not None:
+                    has_valid = True
+
+            if not has_valid and obs_events == 0:
+                scale_res["status"] = "NO_EVENT_REFERENCE"
+            elif total_cells < 10:
+                scale_res["status"] = "INSUFFICIENT_SPATIAL_DATA"
+            else:
+                scale_res["status"] = "VALID"
+
+            results[key] = scale_res
+
+        return results
 
     @classmethod
     def evaluate_model(

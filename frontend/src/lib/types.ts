@@ -336,24 +336,75 @@ export interface DistrictForecast {
 }
 
 export interface VerificationMetricSet {
-  rmse: number;
+  rmse_mm?: number;
+  rmse?: number;
+  mae_mm?: number;
+  mae?: number;
+  mean_bias_mm?: number;
+  bias?: number;
   ets: number;
   csi: number;
   pod: number;
   far: number;
-  fss: number;
+  fss_50km?: number | null;
+  fss?: number | null;
+  sample_count?: number;
+  heavy_event_count?: number;
+}
+
+export interface RegimeVerificationEntry {
+  regime_name: string;
+  display_name: string;
+  sample_count: number;
+  heavy_event_count: number;
+  status: 'SUFFICIENT' | 'INSUFFICIENT_SAMPLE' | 'NO_EVALUATION_SAMPLES' | string;
+  fss_available: boolean;
+  interpretation?: string | null;
+  raw_nwp?: VerificationMetricSet | null;
+  quantile_mapping?: VerificationMetricSet | null;
+  global_ml?: VerificationMetricSet | null;
+  regime_aware_ml?: VerificationMetricSet | null;
+}
+
+export interface FssScaleResult {
+  scale_km: number;
+  window_size_cells: number;
+  raw_nwp?: number | null;
+  quantile_mapping?: number | null;
+  global_ml?: number | null;
+  regime_aware_ml?: number | null;
+  threshold_mm?: number;
+  status: 'VALID' | 'NO_EVENT_REFERENCE' | 'INSUFFICIENT_SPATIAL_DATA' | string;
+  valid_grid_cells?: number | null;
+  event_cells_observed?: number | null;
+}
+
+export interface MultiScaleFssReport {
+  threshold_mm: number;
+  grid_resolution_km: number;
+  evaluation_domain: string;
+  scales: Record<string, FssScaleResult>;
 }
 
 export interface VerificationResponse {
-  reference_source: string;
-  verification_period: string;
-  lead_time_hours: number;
-  sample_size_events: number;
-  raw_nwp: VerificationMetricSet;
-  quantile_mapping: VerificationMetricSet;
-  global_ml: VerificationMetricSet;
-  regime_aware_ml: VerificationMetricSet;
-  regime_specific_skill: Record<string, { ets: number; csi: number; rmse: number }>;
+  evaluation_period: string;
+  sample_count?: number;
+  threshold_mm?: number;
+  benchmark_metrics?: Record<string, VerificationMetricSet>;
+  regime_stratified?: Record<string, RegimeVerificationEntry>;
+  multi_scale_fss?: MultiScaleFssReport;
+  regime_skill_gain_pct?: Record<string, number>;
+  ground_truth_source?: string;
+  provenance_status?: string;
+  // Legacy / fallback fields:
+  reference_source?: string;
+  lead_time_hours?: number;
+  sample_size_events?: number;
+  raw_nwp?: VerificationMetricSet;
+  quantile_mapping?: VerificationMetricSet;
+  global_ml?: VerificationMetricSet;
+  regime_aware_ml?: VerificationMetricSet;
+  regime_specific_skill?: Record<string, { ets: number; csi: number; rmse: number }>;
 }
 
 export interface UnifiedSpatialContours {

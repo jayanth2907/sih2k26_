@@ -7,7 +7,12 @@ import { AnalysisCommand } from '@/components/location/AnalysisCommand';
 import { MapHud } from '@/components/map/MapHud';
 import { WarningPanel } from '@/components/warning/WarningPanel';
 import { EvidenceStrip } from '@/components/common/EvidenceStrip';
+import { EvidenceHub } from '@/components/evidence/EvidenceHub';
 import { RadarModal } from '@/components/radar/RadarModal';
+import { SatelliteModal } from '@/components/satellite/SatelliteModal';
+import { NwpModal } from '@/components/nwp/NwpModal';
+import { AtmosphericDriversModal } from '@/components/atmospheric/AtmosphericDriversModal';
+import { WhyAICorrected } from '@/components/explanation/WhyAICorrected';
 import { WhyAssessment } from '@/components/explainability/WhyAssessment';
 import { DistrictForecastTable } from '@/components/forecast/DistrictForecastTable';
 import { VerificationModal } from '@/components/verification/VerificationModal';
@@ -66,6 +71,9 @@ export default function HydroWatchDashboard() {
   const [error, setError] = useState<{ message: string; details?: string } | null>(null);
   const [isBackendHealthy, setIsBackendHealthy] = useState<boolean>(true);
   const [isRadarModalOpen, setIsRadarModalOpen] = useState<boolean>(false);
+  const [isSatelliteModalOpen, setIsSatelliteModalOpen] = useState<boolean>(false);
+  const [isNwpModalOpen, setIsNwpModalOpen] = useState<boolean>(false);
+  const [isAtmosphericModalOpen, setIsAtmosphericModalOpen] = useState<boolean>(false);
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState<boolean>(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -265,6 +273,10 @@ export default function HydroWatchDashboard() {
           onChangeNwpHorizon={setNwpHorizonHours}
           satelliteMaxCloud={satelliteMaxCloud}
           onChangeSatelliteMaxCloud={setSatelliteMaxCloud}
+          selectedModel={selectedModel}
+          onSelectModel={setSelectedModel}
+          activeLayer={activeLayer}
+          onSelectLayer={setActiveLayer}
         />
 
         {/* 3. Hero Geospatial Section: Real 3D Terrain Globe & Map HUD */}
@@ -339,7 +351,23 @@ export default function HydroWatchDashboard() {
           <WarningPanel warning={data?.warning} />
         </section>
 
-        {/* 5. Physical Telemetry 4-Method Evidence Strip */}
+        {/* 5. Multi-Source Meteorological Evidence Hub */}
+        <section>
+          <EvidenceHub
+            satellite={data?.inundation}
+            radar={data?.radar}
+            nwp={data?.nwp}
+            regime={data?.regime}
+            sourceStatus={data?.source_status}
+            isDemo={true}
+            onOpenRadarModal={() => setIsRadarModalOpen(true)}
+            onOpenSatelliteModal={() => setIsSatelliteModalOpen(true)}
+            onOpenNwpModal={() => setIsNwpModalOpen(true)}
+            onOpenAtmosphericModal={() => setIsAtmosphericModalOpen(true)}
+          />
+        </section>
+
+        {/* 6. Four-Model Post-Processing Benchmark Strip */}
         <section>
           <EvidenceStrip
             rainfall={data?.rainfall_prediction}
@@ -363,8 +391,18 @@ export default function HydroWatchDashboard() {
           />
         </section>
 
-        {/* 7. Explainability: 4-Product Comparison Benchmark, Synoptic Feeds & Tree SHAP */}
-        <section>
+        {/* 7. Explainability: Scientific "Why AI Corrected" & 4-Product Comparison Benchmark */}
+        <section className="space-y-5">
+          <WhyAICorrected
+            regime={data?.regime}
+            postProcessing={data?.post_processing}
+            probabilities={data?.probabilities}
+            xai={data?.rainfall_prediction?.xai}
+            districtForecast={data?.district_forecast}
+            rawNwpMm={rawNwpVal}
+            onOpenAtmosphericModal={() => setIsAtmosphericModalOpen(true)}
+          />
+
           <WhyAssessment
             risk={data?.risk}
             xai={data?.rainfall_prediction?.xai}
@@ -404,6 +442,36 @@ export default function HydroWatchDashboard() {
         isOpen={isRadarModalOpen}
         onClose={() => setIsRadarModalOpen(false)}
         radar={data?.radar}
+        latitude={latitude}
+        longitude={longitude}
+        locationName={locationName}
+      />
+
+      {/* Satellite Multispectral Imagery Modal */}
+      <SatelliteModal
+        isOpen={isSatelliteModalOpen}
+        onClose={() => setIsSatelliteModalOpen(false)}
+        satellite={data?.inundation}
+        latitude={latitude}
+        longitude={longitude}
+        locationName={locationName}
+      />
+
+      {/* Numerical Weather Prediction Baseline Modal */}
+      <NwpModal
+        isOpen={isNwpModalOpen}
+        onClose={() => setIsNwpModalOpen(false)}
+        nwp={data?.nwp}
+        latitude={latitude}
+        longitude={longitude}
+        locationName={locationName}
+      />
+
+      {/* Atmospheric Synoptic Drivers & Regime Classification Modal */}
+      <AtmosphericDriversModal
+        isOpen={isAtmosphericModalOpen}
+        onClose={() => setIsAtmosphericModalOpen(false)}
+        regime={data?.regime}
         latitude={latitude}
         longitude={longitude}
         locationName={locationName}

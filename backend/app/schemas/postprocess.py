@@ -61,16 +61,63 @@ class DistrictForecast(BaseModel):
 class VerificationMetricSet(BaseModel):
     """Standard spatial and categorical forecast verification metrics."""
     rmse_mm: float = Field(..., description="Root Mean Square Error in mm (lower is better)")
+    mae_mm: Optional[float] = Field(None, description="Mean Absolute Error in mm (lower is better)")
+    mean_bias_mm: Optional[float] = Field(None, description="Mean Bias in mm")
     ets: float = Field(..., ge=-0.33, le=1.0, description="Equitable Threat Score (higher is better, max 1.0)")
     csi: float = Field(..., ge=0.0, le=1.0, description="Critical Success Index / Threat Score (higher is better)")
     pod: float = Field(..., ge=0.0, le=1.0, description="Probability of Detection / Hit Rate")
     far: float = Field(..., ge=0.0, le=1.0, description="False Alarm Ratio (lower is better)")
-    fss_50km: float = Field(..., ge=0.0, le=1.0, description="Fractions Skill Score at 50km neighborhood radius")
+    fss_50km: Optional[float] = Field(None, description="Fractions Skill Score at 50km neighborhood radius (null if not available at regime level)")
+    sample_count: Optional[int] = Field(None, description="Number of evaluated samples")
+    heavy_event_count: Optional[int] = Field(None, description="Number of observed heavy rain >= 64.5mm events")
+
+
+class RegimeVerificationEntry(BaseModel):
+    """Regime-stratified verification scorecard entry."""
+    regime_name: str = Field(..., description="Machine regime key (e.g. 'ACTIVE_MONSOON')")
+    display_name: str = Field(..., description="Human-readable regime name")
+    sample_count: int = Field(..., ge=0, description="Number of held-out samples in this regime")
+    heavy_event_count: int = Field(..., ge=0, description="Number of observed heavy rainfall (>=64.5mm) events")
+    status: str = Field("SUFFICIENT", description="'SUFFICIENT', 'INSUFFICIENT_SAMPLE', or 'NO_EVALUATION_SAMPLES'")
+    fss_available: bool = Field(False, description="Whether spatial FSS is genuinely available at regime level")
+    interpretation: Optional[str] = Field(None, description="Factual meteorological regime description")
+    raw_nwp: Optional[VerificationMetricSet] = Field(None, description="Raw NWP Forecast baseline metrics")
+    quantile_mapping: Optional[VerificationMetricSet] = Field(None, description="Empirical Quantile Mapping metrics")
+    global_ml: Optional[VerificationMetricSet] = Field(None, description="Global ML post-processing metrics")
+    regime_aware_ml: Optional[VerificationMetricSet] = Field(None, description="Regime-Aware AI post-processing metrics")
+
+
+class FssScaleResult(BaseModel):
+    """Multi-scale Fractions Skill Score result for a single spatial neighborhood scale."""
+    scale_km: int = Field(..., description="Spatial neighborhood diameter / scale in kilometers (25, 50, 100)")
+    window_size_cells: int = Field(..., description="Derived filter window size in grid cells")
+    raw_nwp: Optional[float] = Field(None, description="Raw NWP Forecast FSS score")
+    quantile_mapping: Optional[float] = Field(None, description="Empirical Quantile Mapping FSS score")
+    global_ml: Optional[float] = Field(None, description="Global ML post-processing FSS score")
+    regime_aware_ml: Optional[float] = Field(None, description="Regime-Aware AI post-processing FSS score")
+    threshold_mm: float = Field(default=64.5, description="Applied heavy rainfall threshold in mm / 24h")
+    status: str = Field(default="VALID", description="'VALID', 'NO_EVENT_REFERENCE', or 'INSUFFICIENT_SPATIAL_DATA'")
+    valid_grid_cells: Optional[int] = Field(None, description="Total evaluated valid grid cells in domain")
+    event_cells_observed: Optional[int] = Field(None, description="Total observed event grid cells (>= threshold)")
+
+
+class MultiScaleFssReport(BaseModel):
+    """Multi-scale spatial Fractions Skill Score (FSS) package across 25km, 50km, and 100km."""
+    threshold_mm: float = Field(default=64.5, description="Precipitation threshold limit in mm / 24h")
+    grid_resolution_km: float = Field(default=25.0, description="Nominal grid spacing in km (IMD 0.25° ~ 25km)")
+    evaluation_domain: str = Field(default="South Asian Monsoon Domain (0.25° Gridded IMD / DWR Target)", description="Spatial domain description")
+    scales: Dict[str, FssScaleResult] = Field(default_factory=dict, description="FSS results keyed by scale ('25km', '50km', '100km')")
 
 
 class VerificationResponse(BaseModel):
-    """Verification benchmark comparing the 4 post-processing products across regimes."""
-    evaluation_period: str = Field("2024 Monsoon Season (JJAS Verification)", description="Verification dataset / period")
-    benchmark_metrics: Dict[str, VerificationMetricSet] = Field(..., description="Skill metrics for raw_nwp, quantile_mapping, global_ml, regime_aware_ml")
+    """Verification benchmark comparing the 4 post-processing products across regimes and spatial scales."""
+    evaluation_period: str = Field("2024–2025 Monsoon Season (Held-out Prospective Evaluation)", description="Verification dataset / period")
+    sample_count: int = Field(default=800, description="Total number of evaluated held-out test samples")
+    threshold_mm: float = Field(default=64.5, description="Applied heavy rainfall evaluation threshold in mm")
+    benchmark_metrics: Dict[str, VerificationMetricSet] = Field(..., description="Overall skill metrics for raw_nwp, quantile_mapping, global_ml, regime_aware_ml")
+    regime_stratified: Dict[str, RegimeVerificationEntry] = Field(default_factory=dict, description="Regime-stratified verification scorecard")
+    multi_scale_fss: Optional[MultiScaleFssReport] = Field(None, description="Multi-scale spatial Fractions Skill Score (FSS) at 25km, 50km, and 100km")
     regime_skill_gain_pct: Dict[str, float] = Field(..., description="Percentage improvement in CSI/ETS per regime")
     ground_truth_source: str = Field("IMD 0.25° Gridded Rainfall & DWR QPE Network", description="Verification observational reference")
+    provenance_status: str = Field("HELD_OUT_PROTOTYPE_EVALUATION", description="Provenance tracking label")
+
