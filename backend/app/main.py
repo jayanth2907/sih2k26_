@@ -23,22 +23,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Operating environment: %s", settings.ENVIRONMENT)
     logger.info("CORS allowed origins configured: %s", settings.ALLOWED_ORIGINS)
 
-    # Preload ML models during application startup
-    try:
-        from backend.app.services.model1_service import Model1Service
-        m1 = Model1Service.get_instance()
-        m1.load()
-        logger.info("Model 1 (XGBoost) successfully loaded during startup.")
-    except Exception as exc:
-        logger.warning("Model 1 was not loaded during startup: %s", exc)
-
-    try:
-        from backend.app.services.model2_service import Model2Service
-        m2 = Model2Service.get_instance()
-        m2.load()
-        logger.info("Model 2 (FloodUNet) successfully loaded during startup.")
-    except Exception as exc:
-        logger.warning("Model 2 was not loaded during startup: %s", exc)
+    # Lazy load ML models on demand rather than eagerly at startup to stay under 512MB RAM
+    logger.info("ML Models configured for on-demand lazy loading.")
 
     yield
     logger.info("Shutting down backend application.")

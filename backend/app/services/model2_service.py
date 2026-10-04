@@ -129,10 +129,17 @@ class Model2Service(BaseService):
                 device = self._target_device
                 logger.info("Loading Model 2 (FloodUNet) from: %s on device: %s", resolved_file, device)
 
+                import gc
+                torch.set_num_threads(1)
+                torch.set_grad_enabled(False)
                 model = FloodUNet(in_channels=6, base_channels=32, out_channels=1)
                 checkpoint = torch.load(str(resolved_file), map_location="cpu", weights_only=False)
                 state_dict = checkpoint.get("model_state_dict", checkpoint)
                 model.load_state_dict(state_dict)
+                del checkpoint
+                del state_dict
+                gc.collect()
+
                 model.to(device)
                 model.eval()
 
