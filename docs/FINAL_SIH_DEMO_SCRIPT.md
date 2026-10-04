@@ -112,7 +112,7 @@
 
 *(Presenter opens the Audit Drawer)*
 
-> *"In conclusion, HydroWatch SIH26080 delivers:
+> *"In conclusion, MEGHANETRA (PS26080) delivers:
 > 1. Soft multi-label regime conditioning;
 > 2. Physics-guided residual post-processing;
 > 3. Calibrated exceedance probabilities and uncertainty bounds;

@@ -11,7 +11,7 @@ A core requirement in meteorological machine learning is the **strict prevention
 
 Standard randomized $K$-fold cross-validation erroneously shuffles temporally adjacent convective events across train and test partitions, yielding artificially inflated, unreplicable skill scores.
 
-This audit certifies that **HydroWatch SIH26080** strictly enforces **zero data leakage** through chronological temporal partitioning and causal feature windowing.
+This audit certifies that **MEGHANETRA (PS26080)** strictly enforces **zero data leakage** through chronological temporal partitioning and causal feature windowing.
 
 ---
 

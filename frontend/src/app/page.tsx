@@ -50,7 +50,7 @@ const DynamicCesiumGlobe = dynamic(
   }
 );
 
-export default function HydroWatchDashboard() {
+export default function MeghanetraDashboard() {
   // Location State (Default: Mumbai, Maharashtra)
   const [selectedLocation, setSelectedLocation] = useState<PresetLocation>(PRESET_LOCATIONS[0]);
   const [latitude, setLatitude] = useState<number>(PRESET_LOCATIONS[0].latitude);
@@ -85,7 +85,7 @@ export default function HydroWatchDashboard() {
     checkBackendHealth()
       .then(() => setIsBackendHealthy(true))
       .catch((err) => {
-        console.warn('[HydroWatch] Backend connection warning:', err);
+        console.warn('[MEGHANETRA] Backend connection warning:', err);
         setIsBackendHealthy(false);
       });
 
@@ -98,7 +98,7 @@ export default function HydroWatchDashboard() {
         }
       })
       .catch((err) => {
-        console.warn('[HydroWatch] District forecasts fetch fallback:', err);
+        console.warn('[MEGHANETRA] District forecasts fetch fallback:', err);
       });
   }, [predictionDate]);
 
@@ -135,7 +135,7 @@ export default function HydroWatchDashboard() {
       if (err instanceof Error && err.name === 'AbortError') {
         return; // Cleanly cancelled
       }
-      console.error('[HydroWatch] Analysis failed:', err);
+      console.error('[MEGHANETRA] Analysis failed:', err);
       const errMsg = err instanceof Error ? err.message : 'Environmental synthesis failed.';
       setError({
         message: 'Could not complete multi-source environmental assessment for target location.',

@@ -2,9 +2,16 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'HydroWatch — Geospatial Environmental & Flood Intelligence',
+  title: 'MEGHANETRA | Regime-Aware Monsoon Rainfall Intelligence',
   description:
-    'Commercial-grade multi-source flood risk assessment and early warning platform synthesizing observational weather, NOAA GFS NWP, RainViewer Doppler radar, and Sentinel-2 FloodUNet inundation analytics.',
+    'MEGHANETRA — Regime-Aware AI for Probabilistic Monsoon Rainfall Intelligence. Advanced NWP post-processing, spatial verification, and district-level decision support.',
+  applicationName: 'MEGHANETRA',
+  openGraph: {
+    title: 'MEGHANETRA | Regime-Aware Monsoon Rainfall Intelligence',
+    description:
+      'MEGHANETRA — Regime-Aware AI for Probabilistic Monsoon Rainfall Intelligence.',
+    siteName: 'MEGHANETRA',
+  },
 };
 
 export const viewport: Viewport = {

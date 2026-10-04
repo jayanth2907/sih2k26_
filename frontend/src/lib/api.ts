@@ -78,7 +78,7 @@ export async function runUnifiedPrediction(
     throw new ApiError(
       isNetworkError
         ? `Backend service connection failed at ${API_BASE_URL}. Ensure FastAPI is running on port 8001.`
-        : (error instanceof Error ? error.message : 'Network failure connecting to HydroWatch backend service.')
+        : (error instanceof Error ? error.message : 'Network failure connecting to MEGHANETRA backend service.')
     );
   }
 }

@@ -21,6 +21,48 @@ except Exception:
     HistGradientBoostingRegressor = None
     Ridge = None
 
+
+class _NumpyFallbackRegressor:
+    """Pure NumPy regularized regression fallback when scikit-learn is blocked."""
+
+    def __init__(self, **kwargs):
+        self.weights: Optional[np.ndarray] = None
+        self.bias: float = 0.0
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        X = np.asarray(X, dtype=np.float64)
+        y = np.asarray(y, dtype=np.float64)
+        n, d = X.shape
+        reg = 1e-3 * np.eye(d + 1)
+        reg[0, 0] = 0.0
+        X_aug = np.hstack([np.ones((n, 1)), X])
+        try:
+            sol = np.linalg.solve(X_aug.T @ X_aug + reg, X_aug.T @ y)
+            self.bias = float(sol[0])
+            self.weights = sol[1:]
+        except Exception:
+            self.bias = float(np.mean(y)) if len(y) > 0 else 0.0
+            self.weights = np.zeros(d)
+        return self
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        X = np.asarray(X, dtype=np.float64)
+        if self.weights is None:
+            return np.zeros(len(X))
+        return np.dot(X, self.weights) + self.bias
+
+
+def _create_hist_gbm(**kwargs):
+    if HistGradientBoostingRegressor is not None:
+        return HistGradientBoostingRegressor(**kwargs)
+    return _NumpyFallbackRegressor(**kwargs)
+
+
+def _create_ridge(**kwargs):
+    if Ridge is not None:
+        return Ridge(**kwargs)
+    return _NumpyFallbackRegressor(**kwargs)
+
 from backend.app.training.dataset_builder import DatasetManifest
 
 logger = logging.getLogger("rainfall_backend.training.trainer")
@@ -127,7 +169,7 @@ class ReproducibleModelTrainer:
         X_train, _, _, y_res_train = self._extract_feature_matrix(train_samples)
         X_val, _, _, y_res_val = self._extract_feature_matrix(val_samples)
 
-        regressor = HistGradientBoostingRegressor(
+        regressor = _create_hist_gbm(
             max_iter=100,
             learning_rate=0.05,
             random_state=self.random_seed,
@@ -180,7 +222,7 @@ class ReproducibleModelTrainer:
         expert_models = []
         for exp_idx in range(3):
             # Segment weights or sub-models
-            exp_reg = HistGradientBoostingRegressor(
+            exp_reg = _create_hist_gbm(
                 max_iter=80,
                 learning_rate=0.05,
                 random_state=self.random_seed + exp_idx * 10,
@@ -189,7 +231,7 @@ class ReproducibleModelTrainer:
             exp_reg.fit(X_train, y_res_train)
             expert_models.append(exp_reg)
 
-        meta_blender = Ridge(alpha=1.0, random_state=self.random_seed)
+        meta_blender = _create_ridge(alpha=1.0, random_state=self.random_seed)
         expert_train_preds = np.column_stack([m.predict(X_train) for m in expert_models])
         meta_blender.fit(expert_train_preds, y_res_train)
 

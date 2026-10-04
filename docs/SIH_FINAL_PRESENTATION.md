@@ -7,8 +7,9 @@
 ---
 
 ### Slide 1: Title & Problem Statement
-* **Title:** HydroWatch AI — Regime-Aware Post-Processing of Monsoon Rainfall Forecasts
-* **Problem Statement ID:** SIH26080
+* **Title:** MEGHANETRA — Regime-Aware AI for Probabilistic Monsoon Rainfall Intelligence
+* **Tagline:** Seeing the Regime Behind the Rain
+* **Problem Statement ID:** PS26080
 * **Target Organization:** Ministry of Earth Sciences (MoES)
 * **Department:** National Centre for Medium Range Weather Forecasting (NCMRWF)
 * **Core Value Proposition:** Learning state-dependent NWP forecast errors conditioned on synoptic weather regimes to provide calibrated rainfall totals, exceedance probabilities, and uncertainty bounds for India.

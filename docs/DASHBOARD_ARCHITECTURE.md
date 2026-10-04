@@ -3,18 +3,18 @@
 **Target Problem Statement:** SIH26080 — Regime-Aware AI Post-Processing of Monsoon Rainfall Forecasts  
 **Organization:** Ministry of Earth Sciences (MoES)  
 **Department:** National Centre for Medium Range Weather Forecasting (NCMRWF)  
-**System Name:** HydroWatch AI (PS26080 Spatial Calibration Platform)  
+**System Name:** MEGHANETRA (PS26080 Spatial Calibration Platform)  
 **Architecture Classification:** Prospective Prototype / Scientific Demonstration Platform  
 
 ---
 
 ## 1. SYSTEM ARCHITECTURAL OVERVIEW
 
-The HydroWatch SIH26080 frontend is built on **Next.js 16 (App Router), React 19, CesiumJS 1.145 (3D Geospatial Engine), and Vanilla CSS Design Tokens**. The dashboard connects directly to the Phase 3 meteorological AI post-processing engine (`FastAPI` backend on port `8001`).
+The MEGHANETRA (PS26080) frontend is built on **Next.js 16 (App Router), React 19, CesiumJS 1.145 (3D Geospatial Engine), and Vanilla CSS Design Tokens**. The dashboard connects directly to the Phase 3 meteorological AI post-processing engine (`FastAPI` backend on port `8001`).
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                   HYDRO WATCH AI HUD                                   │
+│                                     MEGHANETRA HUD                                     │
 │                        Header Bar (Model Switcher & Verification Hub)                  │
 ├────────────────────────────────────────┬───────────────────────────────────────────────┤
 │                                        │  FLOATING TELEMETRY MAP HUD                   │

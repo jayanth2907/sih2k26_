@@ -264,7 +264,7 @@ async def get_operational_data_audit() -> Dict[str, Any]:
             "ivt_proxy": {"ncum": "DERIVABLE", "neps": "DERIVABLE", "gfs": "DERIVABLE", "synthetic": "DERIVABLE"},
             "ensemble_spread": {"ncum": "NOT_AVAILABLE", "neps": "AVAILABLE", "gfs": "NOT_AVAILABLE", "synthetic": "AVAILABLE"},
         },
-        "disclaimer": "HydroWatch is an AI post-processing research prototype. Live operational connection to NCMRWF dedicated gateway requires institutional network credentials.",
+        "disclaimer": "MEGHANETRA is an AI post-processing research prototype. Live operational connection to NCMRWF dedicated gateway requires institutional network credentials.",
     }
 
 

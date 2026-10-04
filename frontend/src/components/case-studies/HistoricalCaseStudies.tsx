@@ -49,7 +49,7 @@ export const HistoricalCaseStudies: React.FC<HistoricalCaseStudiesProps> = ({
         if (Array.isArray(data)) setCaseList(data);
       })
       .catch((err) => {
-        console.warn('[HydroWatch] Fallback loading for case studies:', err);
+        console.warn('[MEGHANETRA] Fallback loading for case studies:', err);
       });
   }, []);
 
@@ -63,7 +63,7 @@ export const HistoricalCaseStudies: React.FC<HistoricalCaseStudiesProps> = ({
       const detail = await fetchCaseStudyDetail(caseId);
       setSelectedDetail(detail);
     } catch (err) {
-      console.error('[HydroWatch] Failed fetching case study detail:', err);
+      console.error('[MEGHANETRA] Failed fetching case study detail:', err);
       setError('Could not load detailed historical case study.');
     } finally {
       setIsLoadingDetail(false);

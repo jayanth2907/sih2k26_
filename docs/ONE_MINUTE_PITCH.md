@@ -8,7 +8,7 @@
 
 > Numerical Weather Prediction (NWP) models already provide essential rainfall forecasts across India. **Our system does not attempt to replace NWP with a black-box AI.**
 >
-> Instead, HydroWatch identifies the prevailing large-scale **Weather Regime**—such as Active Monsoon surges, Western Ghats orographic forcing, or Monsoon Lows—learns how NWP systematic errors behave under that specific regime, and post-processes the rainfall forecast using physics-guided residual learning.
+> Instead, MEGHANETRA identifies the prevailing large-scale **Weather Regime**—such as Active Monsoon surges, Western Ghats orographic forcing, or Monsoon Lows—learns how NWP systematic errors behave under that specific regime, and post-processes the rainfall forecast using physics-guided residual learning.
 >
 > Evaluated on a **Four-Model Benchmark Hierarchy**, our regime-aware approach achieves a **77.1% RMSE error reduction** and elevates the Equitable Threat Score from 0.250 to **0.843** on held-out prospective test seasons.
 >

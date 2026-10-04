@@ -14,7 +14,7 @@ Numerical Weather Prediction (NWP) models (such as NCMRWF NCUM or GFS) suffer fr
 - Standard statistical post-processing (Empirical Quantile Mapping - EQM) applies static corrections that fail during regime transitions.
 - Standard Global ML models fail to account for distinct physical precipitation mechanisms.
 
-**SIH26080 Solution:** We present **HydroWatch AI** — a regime-aware post-processing platform that:
+**SIH26080 Solution:** We present **MEGHANETRA** — a regime-aware post-processing platform that:
 1. First classifies the prevailing monsoon regime (e.g., Active Monsoon, Orographic, LPS, Coastal, Break).
 2. Dynamically corrects NWP biases using a soft-conditioned Mixture-of-Experts neural architecture.
 3. Provides calibrated heavy rainfall exceedance probabilities ($P(\ge 64.5\text{ mm})$, $P(\ge 115.6\text{ mm})$) and uncertainty bounds ($P_{10} - P_{50} - P_{90}$).
@@ -26,7 +26,7 @@ Numerical Weather Prediction (NWP) models (such as NCMRWF NCUM or GFS) suffer fr
 ### Step 1: Open Dashboard & Synoptic Situation (0:00 – 0:45)
 - **What to show:** Open `http://localhost:3000`. The 3D Cesium globe renders Mumbai / Western Ghats under the peak monsoon validation benchmark (`2024-07-15`).
 - **What to explain:**
-  > *"Welcome to HydroWatch AI, our operational post-processing platform developed for MoES NCMRWF Problem Statement SIH26080. Notice the top telemetry bar: our synoptic engine has diagnosed the current state as an **Active Monsoon + Coastal Convergence Regime** with 85% confidence, characterized by a 32-knot Low-Level Jet and deep convection."*
+  > *"Welcome to MEGHANETRA, our operational post-processing platform developed for MoES NCMRWF Problem Statement PS26080. Notice the top telemetry bar: our synoptic engine has diagnosed the current state as an **Active Monsoon + Coastal Convergence Regime** with 85% confidence, characterized by a 32-knot Low-Level Jet and deep convection."*
 
 ---
 

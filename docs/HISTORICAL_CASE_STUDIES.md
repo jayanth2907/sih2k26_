@@ -139,5 +139,5 @@ Fractions Skill Score (FSS) requires genuine 2D spatial grid matrices $(N_x \tim
 ## 10. Institutional & Operational Limitations
 
 1. **Retrospective Nature**: These case studies illustrate model calibration under historical meteorological forcings and do not constitute real-time operational alerts.
-2. **Disclaimer of Official Authority**: HydroWatch is an AI post-processing research and decision-support prototype. Official weather warnings, cyclone bulletins, and flood alerts across India are exclusively issued by IMD and MoES.
+2. **Disclaimer of Official Authority**: MEGHANETRA is an AI post-processing research and decision-support prototype. Official weather warnings, cyclone bulletins, and flood alerts across India are exclusively issued by IMD and MoES.
 3. **No Retraining**: Models were not retrained or fine-tuned on individual extreme events to artificially inflate performance numbers.

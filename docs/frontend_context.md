@@ -1,6 +1,6 @@
-# HydroWatch Frontend — Honest Architecture & Technical Context
+# MEGHANETRA Frontend — Architecture & Technical Context
 
-> **Integrity Statement**: This document is an authentic, zero-exaggeration technical breakdown of the HydroWatch frontend application. It documents the exact origin of every live API feed, geospatial layer, machine learning inference service, and presentation component. Zero synthetic fallbacks, zero decorative geospatial slop, zero fake charts, zero emojis, and zero mentions of student, hackathon, or competition.
+> **Integrity Statement**: This document is an authentic technical breakdown of the MEGHANETRA frontend application. It documents the exact origin of every live API feed, geospatial layer, machine learning inference service, and presentation component. Zero synthetic fallbacks, zero decorative geospatial slop, zero fake charts, and zero emojis.
 
 ---
 

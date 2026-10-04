@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-bold tracking-wider text-base text-white">HydroWatch AI</span>
+            <span className="font-bold tracking-wider text-base text-white">MEGHANETRA</span>
             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#1e2638] text-[#00e5ff] uppercase tracking-widest border border-[#00e5ff]/30">
               MoES · NCMRWF
             </span>

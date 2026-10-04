@@ -18,18 +18,22 @@ class _NumpyFallbackRegressor:
     def __init__(self, **kwargs):
         self.weights: Optional[np.ndarray] = None
         self.bias: float = 0.0
+        self.mean: Optional[np.ndarray] = None
+        self.std: Optional[np.ndarray] = None
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         X = np.asarray(X, dtype=np.float64)
         y = np.asarray(y, dtype=np.float64)
         n, d = X.shape
-        reg = 1e-3 * np.eye(d + 1)
-        reg[0, 0] = 0.0
-        X_aug = np.hstack([np.ones((n, 1)), X])
+        self.mean = np.mean(X, axis=0)
+        self.std = np.std(X, axis=0)
+        self.std[self.std < 1e-8] = 1.0
+        X_norm = (X - self.mean) / self.std
+
+        reg = 1e-2 * np.eye(d)
         try:
-            sol = np.linalg.solve(X_aug.T @ X_aug + reg, X_aug.T @ y)
-            self.bias = float(sol[0])
-            self.weights = sol[1:]
+            self.weights = np.linalg.solve(X_norm.T @ X_norm + reg, X_norm.T @ (y - np.mean(y)))
+            self.bias = float(np.mean(y))
         except Exception:
             self.bias = float(np.mean(y)) if len(y) > 0 else 0.0
             self.weights = np.zeros(d)
@@ -37,9 +41,10 @@ class _NumpyFallbackRegressor:
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         X = np.asarray(X, dtype=np.float64)
-        if self.weights is None:
+        if self.weights is None or self.mean is None or self.std is None:
             return np.zeros(len(X))
-        return np.dot(X, self.weights) + self.bias
+        X_norm = (X - self.mean) / self.std
+        return np.dot(X_norm, self.weights) + self.bias
 
 
 def _create_hist_gbm(**kwargs):

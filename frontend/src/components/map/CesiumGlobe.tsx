@@ -155,7 +155,7 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
                 style: Cesium.IonWorldImageryStyle.AERIAL_WITH_LABELS,
               });
             } catch (ionErr) {
-              console.warn('[HydroWatch Cesium] Ion World Imagery initialization fallback:', ionErr);
+              console.warn('[MEGHANETRA Cesium] Ion World Imagery initialization fallback:', ionErr);
             }
           }
 
@@ -178,7 +178,7 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
             setSatelliteLoaded(true);
           }
         } catch (imageryErr) {
-          console.warn('[HydroWatch Cesium] Base satellite imagery error:', imageryErr);
+          console.warn('[MEGHANETRA Cesium] Base satellite imagery error:', imageryErr);
         }
 
         // 2. Configure 3D World Terrain with realistic relief & water mask
@@ -209,7 +209,7 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
             }
           }
         } catch (terrainErr) {
-          console.warn('[HydroWatch Cesium] 3D World Terrain fallback to ellipsoid:', terrainErr);
+          console.warn('[MEGHANETRA Cesium] 3D World Terrain fallback to ellipsoid:', terrainErr);
           setTerrainLoaded(false);
         }
 
@@ -236,7 +236,7 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
         flyCameraToCoordinates(viewer, latitude, longitude, 18000, -38);
         updateLocationPin(viewer, latitude, longitude, locationName);
       } catch (err) {
-        console.error('[HydroWatch Cesium] Viewer initialization failure:', err);
+        console.error('[MEGHANETRA Cesium] Viewer initialization failure:', err);
         setErrorMessage('Geospatial view initialization failed. WebGL2 or 3D canvas unavailable.');
         setIsInitializing(false);
       }
@@ -381,7 +381,7 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
           offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-38), 0),
         });
       } catch (geoErr) {
-        console.warn('[HydroWatch Cesium] GeoJSON polygon rendering error:', geoErr);
+        console.warn('[MEGHANETRA Cesium] GeoJSON polygon rendering error:', geoErr);
       }
     }
 

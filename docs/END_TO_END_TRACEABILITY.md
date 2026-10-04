@@ -132,7 +132,7 @@ This document establishes 1-to-1 code traceability from raw numerical and observ
 * **Output:** `UnifiedPredictionResponse`.
 * **Source Files:**
   - `backend/app/services/unified_prediction_service.py` (`UnifiedPredictionService`)
-  - `frontend/src/app/page.tsx` (`HydroWatchDashboard`)
+  - `frontend/src/app/page.tsx` (`MeghanetraDashboard`)
   - `frontend/src/components/map/CesiumGlobe.tsx` (6 3D Geospatial Layers)
   - `frontend/src/components/explainability/WhyAssessment.tsx` (5-Step Visual Causal Flow & Tree SHAP)
   - `frontend/src/components/verification/VerificationModal.tsx` (Verification Benchmark Hub)

@@ -164,7 +164,7 @@ export const NwpModal: React.FC<NwpModalProps> = ({
           <div className="flex items-start gap-2 bg-[#121622] border border-[#1e2638] p-2.5 rounded text-[11px] text-[#64748b]">
             <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#94a3b8]" />
             <span>
-              The raw NWP output represents direct uncalibrated physics from the numerical model. HydroWatch AI applies soft-conditioned regime-aware AI residual post-processing to systematically correct orographic and convective bias deltas.
+              The raw NWP output represents direct uncalibrated physics from the numerical model. MEGHANETRA applies soft-conditioned regime-aware AI residual post-processing to systematically correct orographic and convective bias deltas.
             </span>
           </div>
         </div>
