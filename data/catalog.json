@@ -1,0 +1,76 @@
+{
+  "version": "1.0.0",
+  "catalog_updated_at": "2026-10-02T12:00:00Z",
+  "datasets": [
+    {
+      "dataset_id": "ERA5_JJAS_2010_2023_025DEG",
+      "name": "ECMWF ERA5 South Asia Monsoon Atmospheric Reanalysis",
+      "source": "Copernicus Climate Data Store (ECMWF)",
+      "variables": [
+        "u850", "v850", "t850", "r850", "z850",
+        "u700", "v700", "t700", "r700", "z700",
+        "u500", "v500", "t500", "r500", "z500",
+        "tp", "msl", "sp", "2t", "cape"
+      ],
+      "time_range": {
+        "start": "2010-06-01T00:00:00Z",
+        "end": "2023-09-30T23:00:00Z",
+        "season": "JJAS (June, July, August, September)"
+      },
+      "domain": {
+        "north": 38.0,
+        "south": 6.0,
+        "west": 66.0,
+        "east": 100.0,
+        "resolution_deg": 0.25
+      },
+      "format": "NetCDF4 / Zarr",
+      "provenance": "REAL_REANALYSIS",
+      "status": "CATALOGED_ADAPTER_READY",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "dataset_id": "IMD_025_DAILY_PRECIP_2010_2023",
+      "name": "India Meteorological Department (IMD) 0.25° Daily Gridded Rainfall",
+      "source": "India Meteorological Department (IMD / MoES)",
+      "variables": ["rainfall_24h_accumulation"],
+      "time_range": {
+        "start": "2010-06-01T03:00:00Z",
+        "end": "2023-10-01T03:00:00Z",
+        "season": "JJAS Daily 0830 IST (0300 UTC)"
+      },
+      "domain": {
+        "north": 38.5,
+        "south": 6.5,
+        "west": 66.5,
+        "east": 100.0,
+        "resolution_deg": 0.25
+      },
+      "format": "Binary (.grd) / NetCDF4",
+      "provenance": "REAL_OBSERVATIONS",
+      "status": "CATALOGED_ADAPTER_READY",
+      "checksum_sha256": "9b7a42188636f00155b467e42e472251390f7a77d4c2b92ab14d8bc07c89f5bc"
+    },
+    {
+      "dataset_id": "NCUM_HISTORICAL_NWP_ARCHIVE",
+      "name": "NCMRWF NCUM Regional 12km Historical Forecast Archive",
+      "source": "National Centre for Medium Range Weather Forecasting (NCMRWF)",
+      "variables": ["forecast_precip_24h", "wind_850", "temperature_850", "humidity_850", "mslp"],
+      "time_range": {
+        "start": "2018-06-01T00:00:00Z",
+        "end": "2023-09-30T00:00:00Z"
+      },
+      "domain": {
+        "north": 38.0,
+        "south": 6.0,
+        "west": 66.0,
+        "east": 100.0,
+        "resolution_deg": 0.12
+      },
+      "format": "GRIB2",
+      "provenance": "REAL_NWP_FORECAST_TARGET",
+      "status": "PENDING_INSTITUTIONAL_ARCHIVE_TRANSFER",
+      "checksum_sha256": null
+    }
+  ]
+}

@@ -43,19 +43,30 @@ class HeavyRainfallProbabilities(BaseModel):
 
 
 class DistrictForecast(BaseModel):
-    """District-level aggregated forecast and uncertainty."""
+    """District-level aggregated forecast, uncertainty, probabilities, and prototype decision support."""
+    district_id: Optional[str] = Field(None, description="Stable unique district identifier (e.g. 'MH_SATARA')")
     district_name: str = Field(..., description="District identifier")
     state_name: str = Field(..., description="State identifier")
+    lat: Optional[float] = Field(None, description="District centroid latitude")
+    lon: Optional[float] = Field(None, description="District centroid longitude")
     raw_nwp_mm: float = Field(..., ge=0.0, description="Raw NWP accumulated rainfall (mm)")
-    corrected_mm: float = Field(..., ge=0.0, description="Regime-aware corrected rainfall (mm)")
+    corrected_mm: float = Field(..., ge=0.0, description="Regime-aware corrected rainfall / P50 forecast (mm)")
     correction_delta_mm: float = Field(..., description="Correction magnitude (mm)")
-    uncertainty_lower_bound_mm: float = Field(..., ge=0.0, description="Uncertainty lower bound (mm)")
-    uncertainty_upper_bound_mm: float = Field(..., ge=0.0, description="Uncertainty upper bound (mm)")
-    ensemble_spread_mm: float = Field(..., ge=0.0, description="Ensemble spread (mm)")
-    heavy_prob: float = Field(..., ge=0.0, le=1.0, description="Probability of heavy rain >= 64.5mm")
-    very_heavy_prob: float = Field(..., ge=0.0, le=1.0, description="Probability of very heavy rain >= 115.6mm")
-    extreme_prob: float = Field(..., ge=0.0, le=1.0, description="Probability of extreme rain >= 204.5mm")
+    uncertainty_lower_bound_mm: float = Field(..., ge=0.0, description="Uncertainty lower bound / P10 forecast quantile (mm)")
+    uncertainty_upper_bound_mm: float = Field(..., ge=0.0, description="Uncertainty upper bound / P90 forecast quantile (mm)")
+    ensemble_spread_mm: float = Field(..., ge=0.0, description="Ensemble spread / standard deviation (mm)")
+    heavy_prob: float = Field(..., ge=0.0, le=1.0, description="Calibrated probability of heavy rain >= 64.5mm [0.0, 1.0]")
+    very_heavy_prob: float = Field(..., ge=0.0, le=1.0, description="Calibrated probability of very heavy rain >= 115.6mm [0.0, 1.0]")
+    extreme_prob: float = Field(..., ge=0.0, le=1.0, description="Calibrated probability of extreme rain >= 204.5mm [0.0, 1.0]")
     dominant_regime: WeatherRegimeType = Field(..., description="Dominant weather regime in district")
+    regime_confidence: float = Field(default=0.85, ge=0.0, le=1.0, description="Confidence in dominant regime assignment")
+    aggregation_method: str = Field(default="POINT_SAMPLED_CENTROID", description="Spatial aggregation method (e.g. 'POINT_SAMPLED_CENTROID')")
+    decision_support_category: str = Field(default="NORMAL", description="Deterministic category: 'NORMAL', 'HEAVY_RAINFALL', 'VERY_HEAVY_RAINFALL', 'EXTREMELY_HEAVY_RAINFALL'")
+    decision_basis: str = Field(default="Forecast median evaluated against IMD-aligned threshold criteria.", description="Explicit scientific basis for decision support classification")
+    provenance_status: str = Field(default="HELD_OUT_PROTOTYPE_EVALUATION", description="Provenance tracking label")
+    is_official_imd_warning: bool = Field(default=False, description="Strictly False: Prototype decision support, not an official IMD warning")
+    disclaimer: str = Field(default="Prototype model-derived decision support. Not an official IMD warning.", description="Mandatory operational disclaimer")
+
 
 
 class VerificationMetricSet(BaseModel):

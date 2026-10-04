@@ -154,7 +154,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Documentation Index
+- [`docs/DISTRICT_DECISION_SUPPORT.md`](docs/DISTRICT_DECISION_SUPPORT.md): Phase 8 district-level decision support, 748 vs 766 reconciliation, deterministic threshold categories, and prototype warning specifications.
 - [`docs/FINAL_PROJECT_AUDIT.md`](docs/FINAL_PROJECT_AUDIT.md): Comprehensive forensic audit report.
 - [`docs/END_TO_END_TRACEABILITY.md`](docs/END_TO_END_TRACEABILITY.md): Complete data and code traceability map.
 - [`docs/DATA_LEAKAGE_AUDIT.md`](docs/DATA_LEAKAGE_AUDIT.md): Zero data leakage and chronological split certification.
@@ -168,6 +168,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md): Transparent scientific and operational limitations.
 - [`docs/OPERATIONAL_ROADMAP.md`](docs/OPERATIONAL_ROADMAP.md): Phase 6 NCMRWF operational deployment plan.
 - [`docs/FINAL_VALIDATION_REPORT.md`](docs/FINAL_VALIDATION_REPORT.md): Final test certificate and smoke test results.
+
 
 ---
 

@@ -319,21 +319,41 @@ export interface HeavyRainfallProbabilities {
 }
 
 export interface DistrictForecast {
+  district_id?: string;
   district_name: string;
   state_name: string;
-  forecast_date: string;
-  raw_nwp_rainfall_mm: number;
-  corrected_rainfall_mm: number;
-  correction_magnitude_mm: number;
-  forecast_lower_bound_p10_mm: number;
-  forecast_upper_bound_p90_mm: number;
-  ensemble_spread_mm: number;
-  heavy_probability_pct: number;
-  very_heavy_probability_pct: number;
-  extreme_probability_pct: number;
-  primary_regime: WeatherRegimeType;
-  uncertainty_category: 'LOW' | 'MODERATE' | 'HIGH' | 'EXTREME';
+  lat?: number;
+  lon?: number;
+  forecast_date?: string;
+  raw_nwp_rainfall_mm?: number;
+  raw_nwp_mm?: number;
+  corrected_rainfall_mm?: number;
+  corrected_mm?: number;
+  correction_magnitude_mm?: number;
+  correction_delta_mm?: number;
+  forecast_lower_bound_p10_mm?: number;
+  uncertainty_lower_bound_mm?: number;
+  forecast_upper_bound_p90_mm?: number;
+  uncertainty_upper_bound_mm?: number;
+  ensemble_spread_mm?: number;
+  heavy_probability_pct?: number;
+  heavy_prob?: number;
+  very_heavy_probability_pct?: number;
+  very_heavy_prob?: number;
+  extreme_probability_pct?: number;
+  extreme_prob?: number;
+  primary_regime?: WeatherRegimeType;
+  dominant_regime?: WeatherRegimeType;
+  regime_confidence?: number;
+  uncertainty_category?: 'LOW' | 'MODERATE' | 'HIGH' | 'EXTREME';
+  aggregation_method?: string;
+  decision_support_category?: 'NORMAL' | 'HEAVY_RAINFALL' | 'VERY_HEAVY_RAINFALL' | 'EXTREMELY_HEAVY_RAINFALL' | string;
+  decision_basis?: string;
+  provenance_status?: string;
+  is_official_imd_warning?: boolean;
+  disclaimer?: string;
 }
+
 
 export interface VerificationMetricSet {
   rmse_mm?: number;
@@ -543,3 +563,111 @@ export interface ForecastState {
   model_version: string;
   data_freshness_status: string;
 }
+
+export type CaseStudyStatus = 'AVAILABLE' | 'PARTIALLY_AVAILABLE' | 'NOT_AVAILABLE';
+export type TrainingOverlapStatus = 'TRUE' | 'FALSE' | 'UNKNOWN';
+
+export interface EventWindow {
+  start_date: string;
+  end_date: string;
+  peak_date: string;
+  duration_hours: number;
+  description: string;
+}
+
+export interface CaseStudySpatialDomain {
+  region_name: string;
+  state_name: string;
+  latitude: number;
+  longitude: number;
+  elevation_m?: number | null;
+}
+
+export interface CaseStudyObservation {
+  peak_24h_mm?: number | null;
+  station_name: string;
+  source_agency: string;
+  is_available: boolean;
+}
+
+export interface CaseStudyForecastComparison {
+  is_forecast_available: boolean;
+  raw_nwp_mm?: number | null;
+  eqm_mm?: number | null;
+  global_ml_mm?: number | null;
+  regime_aware_ml_mm?: number | null;
+  bias_correction_delta_mm?: number | null;
+  raw_nwp_error_mm?: number | null;
+  regime_aware_error_mm?: number | null;
+  error_reduction_pct?: number | null;
+}
+
+export interface CaseStudyUncertainty {
+  is_available: boolean;
+  p10_mm?: number | null;
+  p50_mm?: number | null;
+  p90_mm?: number | null;
+  ensemble_spread_mm?: number | null;
+}
+
+export interface CaseStudyExceedanceProbabilities {
+  is_available: boolean;
+  heavy_ge_64_5mm?: number | null;
+  very_heavy_ge_115_6mm?: number | null;
+  extreme_ge_204_5mm?: number | null;
+}
+
+export interface CaseStudyRegime {
+  is_available: boolean;
+  primary_regime?: string | null;
+  confidence?: number | null;
+  posterior_probabilities?: Record<string, number>;
+}
+
+export interface CaseStudySpatialFss {
+  is_available: boolean;
+  fss_25km?: number | null;
+  fss_50km?: number | null;
+  fss_100km?: number | null;
+  threshold_mm: number;
+  status_message: string;
+}
+
+export interface CaseStudyProvenance {
+  evaluation_role: string;
+  training_overlap: TrainingOverlapStatus;
+  benchmark_membership: string;
+  is_official_imd_warning: boolean;
+  disclaimer: string;
+}
+
+export interface CaseStudySummary {
+  case_id: string;
+  title: string;
+  subtitle: string;
+  event_year: number;
+  status: CaseStudyStatus;
+  spatial_domain: CaseStudySpatialDomain;
+  peak_observation_mm?: number | null;
+  training_overlap: TrainingOverlapStatus;
+  primary_regime?: string | null;
+}
+
+export interface CaseStudyDetail {
+  case_id: string;
+  title: string;
+  subtitle: string;
+  status: CaseStudyStatus;
+  event_window: EventWindow;
+  spatial_domain: CaseStudySpatialDomain;
+  observation: CaseStudyObservation;
+  forecast_comparison: CaseStudyForecastComparison;
+  uncertainty: CaseStudyUncertainty;
+  exceedance_probabilities: CaseStudyExceedanceProbabilities;
+  regime: CaseStudyRegime;
+  spatial_fss: CaseStudySpatialFss;
+  provenance: CaseStudyProvenance;
+  synoptic_summary: string;
+  why_corrected_summary: string;
+}
+

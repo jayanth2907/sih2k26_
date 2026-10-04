@@ -15,7 +15,9 @@ import { AtmosphericDriversModal } from '@/components/atmospheric/AtmosphericDri
 import { WhyAICorrected } from '@/components/explanation/WhyAICorrected';
 import { WhyAssessment } from '@/components/explainability/WhyAssessment';
 import { DistrictForecastTable } from '@/components/forecast/DistrictForecastTable';
+import { HistoricalCaseStudies } from '@/components/case-studies/HistoricalCaseStudies';
 import { VerificationModal } from '@/components/verification/VerificationModal';
+
 import { FreshnessTimeline } from '@/components/source-status/FreshnessTimeline';
 import { AuditPanel } from '@/components/provenance/AuditPanel';
 import { AnalysisProgress } from '@/components/loading/AnalysisProgress';
@@ -89,7 +91,9 @@ export default function HydroWatchDashboard() {
 
     fetchDistrictForecasts(predictionDate)
       .then((res) => {
-        if (res?.districts && res.districts.length > 0) {
+        if (Array.isArray(res) && res.length > 0) {
+          setDistrictList(res);
+        } else if (res?.districts && res.districts.length > 0) {
           setDistrictList(res.districts);
         }
       })
@@ -97,6 +101,7 @@ export default function HydroWatchDashboard() {
         console.warn('[HydroWatch] District forecasts fetch fallback:', err);
       });
   }, [predictionDate]);
+
 
   // Execute Unified Prediction Pipeline
   const handleRunAnalysis = useCallback(async () => {
@@ -388,10 +393,22 @@ export default function HydroWatchDashboard() {
             districts={districtList}
             selectedDistrictName={locationName}
             onSelectDistrict={handleSelectDistrictFromTable}
+            onOpenAtmosphericModal={() => setIsAtmosphericModalOpen(true)}
           />
         </section>
 
-        {/* 7. Explainability: Scientific "Why AI Corrected" & 4-Product Comparison Benchmark */}
+        {/* 7. Historical Extreme-Event Case Studies (Phase 9) */}
+        <section>
+          <HistoricalCaseStudies
+            onFocusLocation={(lat, lon, name) =>
+              handleSelectCustom(lat, lon, name)
+            }
+          />
+        </section>
+
+
+        {/* 8. Explainability: Scientific "Why AI Corrected" & 4-Product Comparison Benchmark */}
+
         <section className="space-y-5">
           <WhyAICorrected
             regime={data?.regime}

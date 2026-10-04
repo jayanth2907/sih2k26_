@@ -119,15 +119,25 @@ class PostProcessingService(BaseService):
         )
 
         # District Forecast
-        dist_name = location_name or "Target Meteorological District"
-        state_name = "Monsoon Monitoring Zone"
+        from backend.app.data.sources.districts import DistrictProvider
+        dist_meta = DistrictProvider.lookup_district(coordinates.latitude, coordinates.longitude)
+        dist_name = location_name or dist_meta.get("district", "Target Meteorological District")
+        state_name = dist_meta.get("state", "Monsoon Monitoring Zone")
+        dist_id = dist_meta.get("district_id", f"{state_name[:2].upper()}_{dist_name.replace(' ', '_').upper()}")
+        reg_conf = getattr(regime, "confidence", 0.85) or 0.85
+
         district_forecast = self.engine.generate_district_forecast(
+            district_id=dist_id,
             district_name=dist_name,
             state_name=state_name,
+            lat=coordinates.latitude,
+            lon=coordinates.longitude,
             raw_nwp_mm=raw_mm,
             regime_output=comparison_summary.regime_aware_ml,
             dominant_regime=regime_str,
+            regime_confidence=reg_conf,
         )
+
 
         # Verification Response
         verification = self.engine.get_verification_benchmarks(regime_filter=regime_str, threshold_mm=64.5)

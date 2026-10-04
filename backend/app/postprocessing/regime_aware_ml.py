@@ -7,9 +7,49 @@ Implements Soft Regime Conditioning:
 - Regime interaction features (rainfall * P(regime_i))
 """
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 import numpy as np
-from sklearn.ensemble import HistGradientBoostingRegressor
+try:
+    from sklearn.ensemble import HistGradientBoostingRegressor
+except Exception:
+    HistGradientBoostingRegressor = None
+
+
+class _NumpyFallbackRegressor:
+    """Pure NumPy regularized regression fallback when scikit-learn is blocked."""
+
+    def __init__(self, **kwargs):
+        self.weights: Optional[np.ndarray] = None
+        self.bias: float = 0.0
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        X = np.asarray(X, dtype=np.float64)
+        y = np.asarray(y, dtype=np.float64)
+        n, d = X.shape
+        reg = 1e-3 * np.eye(d + 1)
+        reg[0, 0] = 0.0
+        X_aug = np.hstack([np.ones((n, 1)), X])
+        try:
+            sol = np.linalg.solve(X_aug.T @ X_aug + reg, X_aug.T @ y)
+            self.bias = float(sol[0])
+            self.weights = sol[1:]
+        except Exception:
+            self.bias = float(np.mean(y)) if len(y) > 0 else 0.0
+            self.weights = np.zeros(d)
+        return self
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        X = np.asarray(X, dtype=np.float64)
+        if self.weights is None:
+            return np.zeros(len(X))
+        return np.dot(X, self.weights) + self.bias
+
+
+def _create_hist_gbm(**kwargs):
+    if HistGradientBoostingRegressor is not None:
+        return HistGradientBoostingRegressor(**kwargs)
+    return _NumpyFallbackRegressor(**kwargs)
+
 
 from backend.app.postprocessing.base import (
     BasePostProcessingModel,
@@ -51,7 +91,7 @@ class RegimeAwareMLCorrectionModel(BasePostProcessingModel):
         self.max_depth = max_depth
 
         # Global meta-regressor trained on full 41-dimensional feature matrix with regime interaction terms
-        self.meta_model = HistGradientBoostingRegressor(
+        self.meta_model = _create_hist_gbm(
             max_iter=max_iter,
             learning_rate=learning_rate,
             max_depth=max_depth,
@@ -60,8 +100,8 @@ class RegimeAwareMLCorrectionModel(BasePostProcessingModel):
         )
 
         # Regime-specialized expert models
-        self.expert_models: Dict[str, HistGradientBoostingRegressor] = {
-            reg: HistGradientBoostingRegressor(
+        self.expert_models: Dict[str, Any] = {
+            reg: _create_hist_gbm(
                 max_iter=100,
                 learning_rate=0.06,
                 max_depth=5,

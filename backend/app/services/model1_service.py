@@ -6,7 +6,12 @@ from pathlib import Path
 import threading
 from typing import Any, Dict, List, Optional
 import numpy as np
-import xgboost as xgb
+try:
+    import xgboost as xgb
+except Exception as _xgb_err:
+    xgb = None
+
+
 
 from backend.app.core.config import get_settings
 from backend.app.core.errors import ModelNotLoadedError
@@ -301,6 +306,8 @@ class Model1Service(BaseService):
             try:
                 resolved_file = self.resolve_model_file()
                 logger.info("Loading Model 1 (XGBoost) from: %s", resolved_file)
+                if xgb is None:
+                    raise RuntimeError("XGBoost runtime is unavailable on this environment")
                 bst = xgb.Booster()
                 bst.load_model(str(resolved_file))
 

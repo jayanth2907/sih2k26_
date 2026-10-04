@@ -17,6 +17,23 @@ from backend.app.schemas.nwp import (
     NWPGridData,
     NWPPointForecastResponse,
 )
+from backend.app.schemas.district_decision import (
+    AggregationComparisonMetrics,
+    AggregationComparisonSummary,
+    AggregationMethod,
+    DataQualityStatus,
+    DecisionSupportCategory,
+    DistrictAtmosphericDrivers,
+    DistrictBoundaryRecord,
+    DistrictBulletin,
+    DistrictDecisionThresholds,
+    DistrictForecastProduct,
+    DistrictPolygonGeometry,
+    DistrictProbabilityStats,
+    DistrictSpatialStats,
+    DistrictStatusResponse,
+    DistrictUncertaintyStats,
+)
 from backend.app.schemas.postprocess import (
     DistrictForecast,
     HeavyRainfallProbabilities,

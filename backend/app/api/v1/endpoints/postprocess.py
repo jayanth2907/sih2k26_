@@ -9,6 +9,12 @@ from backend.app.postprocessing.comparison import ForecastComparisonSummary
 from backend.app.postprocessing.inference import PostProcessingInferenceEngine
 from backend.app.postprocessing.model_registry import ModelRegistryEntry, PostProcessingModelRegistry
 from backend.app.schemas.postprocess import DistrictForecast, VerificationResponse
+from backend.app.schemas.spatial_postprocess import (
+    SpatialPredictionOutput,
+    SpatialRainfallSample,
+    SpatialStatusResponse,
+    SpatialVerificationSummary,
+)
 
 logger = logging.getLogger("rainfall_backend.api.v1.postprocess")
 
@@ -91,10 +97,19 @@ async def compare_all_models_get(
     summary="District-Level Post-Processed Monsoon Forecasts",
     description="Retrieve standardized district-level rainfall forecasts, regime conditioning, and uncertainty across administrative districts.",
 )
-async def get_district_forecasts() -> List[DistrictForecast]:
+async def get_district_forecasts(
+    state: Optional[str] = Query(default=None, description="Filter by state / UT name (e.g. 'Maharashtra')"),
+    regime: Optional[str] = Query(default=None, description="Filter by dominant regime (e.g. 'OROGRAPHIC_RAINFALL')"),
+    category: Optional[str] = Query(default=None, description="Filter by decision support category (e.g. 'HEAVY_RAINFALL')"),
+) -> List[DistrictForecast]:
     """Retrieve district-level post-processed rainfall products."""
     engine = PostProcessingInferenceEngine.get_instance()
-    return engine.get_all_district_forecasts()
+    return engine.get_all_district_forecasts(
+        state_filter=state,
+        regime_filter=regime,
+        category_filter=category,
+    )
+
 
 
 @router.get(
@@ -111,3 +126,87 @@ async def get_verification_benchmarks(
     """Query prospective verification benchmarks."""
     engine = PostProcessingInferenceEngine.get_instance()
     return engine.get_verification_benchmarks(regime_filter=regime, threshold_mm=threshold_mm)
+
+
+# ==========================================
+# Phase 13 — Spatial Post-Processing Endpoints
+# ==========================================
+
+@router.post(
+    "/spatial",
+    response_model=SpatialPredictionOutput,
+    status_code=status.HTTP_200_OK,
+    summary="Apply 2D Spatial AI Post-Processing",
+    description="Execute spatially coherent 2D residual error correction, spatial quantiles (P10/P50/P90), and exceedance probability fields.",
+)
+async def postprocess_spatial_grid(
+    sample: Optional[SpatialRainfallSample] = Body(default=None, description="2D meteorological grid sample payload"),
+    model_id: str = Query(default="SPATIAL_REGIME_AWARE_V1", description="'SPATIAL_RESIDUAL_BASELINE_V1', 'SPATIAL_REGIME_AWARE_V1', or 'SPATIAL_REGIME_TEMPORAL_V1'"),
+) -> SpatialPredictionOutput:
+    """Execute 2D spatial rainfall post-processing."""
+    from backend.app.postprocessing.spatial_pipeline import SpatialPostProcessingPipeline
+    pipeline = SpatialPostProcessingPipeline.get_instance()
+    if sample is None:
+        sample = pipeline.generate_demo_sample(patch_size=16)
+    return pipeline.execute_spatial_postprocessing(sample, model_id=model_id)
+
+
+@router.get(
+    "/spatial/status",
+    response_model=SpatialStatusResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Query Spatial Post-Processing Operational Status",
+    description="Retrieve spatial target grid parameters, registered models, and data availability status.",
+)
+async def get_spatial_status() -> SpatialStatusResponse:
+    """Query spatial engine status."""
+    from backend.app.postprocessing.spatial_pipeline import SpatialPostProcessingPipeline
+    return SpatialPostProcessingPipeline.get_instance().get_operational_status()
+
+
+@router.get(
+    "/spatial/models",
+    response_model=List[str],
+    status_code=status.HTTP_200_OK,
+    summary="List Registered Spatial Models",
+    description="Retrieve list of registered 2D spatial meteorological post-processing models.",
+)
+async def get_spatial_models() -> List[str]:
+    """List 2D spatial models."""
+    from backend.app.postprocessing.spatial_pipeline import SpatialPostProcessingPipeline
+    return SpatialPostProcessingPipeline.get_instance().registered_models
+
+
+@router.get(
+    "/spatial/verification",
+    response_model=SpatialVerificationSummary,
+    status_code=status.HTTP_200_OK,
+    summary="Spatial Post-Processing Verification Summary",
+    description="Retrieve multi-scale Fractions Skill Score (25km, 50km, 100km), pattern correlation, and gradient RMSE on held-out grids.",
+)
+async def get_spatial_verification(
+    model_id: str = Query(default="SPATIAL_REGIME_AWARE_V1", description="Spatial model identifier"),
+    threshold_mm: float = Query(default=64.5, description="Heavy rainfall threshold in mm"),
+) -> SpatialVerificationSummary:
+    """Retrieve spatial verification benchmark."""
+    from backend.app.postprocessing.spatial_pipeline import SpatialPostProcessingPipeline
+    from backend.app.postprocessing.spatial_verification import SpatialVerificationEngine
+    pipeline = SpatialPostProcessingPipeline.get_instance()
+    
+    # Evaluate over representative deterministic evaluation test batch
+    test_samples = [pipeline.generate_demo_sample(patch_size=16, dominant_regime=r) for r in ["ACTIVE_MONSOON", "OROGRAPHIC_RAINFALL", "MONSOON_LOW_LPS", "BREAK_MONSOON"]]
+    preds = [pipeline.execute_spatial_postprocessing(s, model_id=model_id).corrected_grid for s in test_samples]
+    obs = [s.observed_grid for s in test_samples]
+    
+    import numpy as np
+    f_grids = [np.array(p) for p in preds]
+    o_grids = [np.array(o) for o in obs]
+    
+    return SpatialVerificationEngine.evaluate_spatial_model(
+        model_id=model_id,
+        model_name="Spatial Regime-Aware Post-Processing Model (Phase 13)",
+        forecast_grids=f_grids,
+        observed_grids=o_grids,
+        threshold_mm=threshold_mm,
+    )
+

@@ -1,0 +1,162 @@
+# ==============================================================================
+# PS26080: REAL HISTORICAL DATA & REPRODUCIBLE TRAINING CONFIGURATION
+# Ministry of Earth Sciences (MoES) / NCMRWF
+# ==============================================================================
+
+version: "1.0.0"
+pipeline_id: "PS26080_HISTORICAL_TRAINING_V1"
+description: "Reproducible historical atmospheric reanalysis & NWP post-processing training configuration"
+
+data_sources:
+  primary_reanalysis:
+    source_id: "ECMWF_ERA5_REANALYSIS"
+    dataset_name: "reanalysis-era5-pressure-levels"
+    single_levels_dataset: "reanalysis-era5-single-levels"
+    access_protocol: "CDS_API"
+    env_url_var: "CDS_API_URL"
+    env_key_var: "CDS_API_KEY"
+    format: "netcdf4"
+    spatial_resolution_deg: 0.25
+    temporal_resolution: "hourly"
+  
+  observation_target:
+    source_id: "IMD_GRIDDED_RAINFALL"
+    dataset_name: "IMD_0.25_DAILY_PRECIPITATION"
+    format: "gridded_binary_netcdf"
+    spatial_resolution_deg: 0.25
+    temporal_resolution: "daily_0300utc"
+    units: "mm"
+
+  nwp_archive:
+    source_id: "NCMRWF_NCUM_ARCHIVE"
+    dataset_name: "NCUM_REGIONAL_12KM_HISTORICAL"
+    status: "TARGET_DEPENDENT_ON_ARCHIVE_PROVISIONING"
+    format: "grib2"
+
+domain:
+  name: "South_Asia_Monsoon_Domain"
+  north: 38.0
+  south: 6.0
+  west: 66.0
+  east: 100.0
+  standard_grid_resolution_deg: 0.25
+
+temporal_coverage:
+  years:
+    start: 2010
+    end: 2023
+  season:
+    name: "JJAS_Monsoon"
+    months: [6, 7, 8, 9]
+
+splits:
+  strategy: "STRICT_CHRONOLOGICAL"
+  training:
+    start_year: 2010
+    end_year: 2019
+    description: "10-year historical fitting window"
+  validation:
+    start_year: 2020
+    end_year: 2021
+    description: "2-year hyperparameter & calibration tuning window"
+  test:
+    start_year: 2022
+    end_year: 2023
+    description: "2-year held-out retrospective evaluation window"
+
+variables:
+  pressure_levels:
+    levels_hpa: [850, 700, 500]
+    parameters:
+      - name: "u"
+        description: "Zonal wind component"
+        canonical_field: "u"
+        units: "m s**-1"
+      - name: "v"
+        description: "Meridional wind component"
+        canonical_field: "v"
+        units: "m s**-1"
+      - name: "t"
+        description: "Temperature"
+        canonical_field: "temperature"
+        units: "K"
+      - name: "r"
+        description: "Relative humidity"
+        canonical_field: "relative_humidity"
+        units: "%"
+      - name: "z"
+        description: "Geopotential height"
+        canonical_field: "geopotential"
+        units: "m**2 s**-2"
+      - name: "w"
+        description: "Vertical velocity"
+        canonical_field: "vertical_velocity"
+        units: "Pa s**-1"
+
+  single_levels:
+    parameters:
+      - name: "tp"
+        description: "Total precipitation"
+        canonical_field: "rainfall"
+        units: "kg m**-2"
+      - name: "msl"
+        description: "Mean sea level pressure"
+        canonical_field: "mslp"
+        units: "Pa"
+      - name: "sp"
+        description: "Surface pressure"
+        canonical_field: "surface_pressure"
+        units: "Pa"
+      - name: "2t"
+        description: "2-metre temperature"
+        canonical_field: "temperature_2m"
+        units: "K"
+      - name: "cape"
+        description: "Convective available potential energy"
+        canonical_field: "cape_j_kg"
+        units: "J kg**-1"
+
+feature_engineering:
+  schema_version: "MeteorologicalFeatureSchema_v2.1"
+  features:
+    - "wind_speed_850"
+    - "wind_direction_850"
+    - "wind_speed_700"
+    - "wind_direction_700"
+    - "vertical_wind_shear_850_500"
+    - "vertical_wind_shear_850_700"
+    - "vertical_wind_shear_700_500"
+    - "relative_humidity_850"
+    - "relative_humidity_700"
+    - "relative_humidity_500"
+    - "moisture_transport_ivt_proxy"
+    - "pressure_gradient"
+    - "orographic_lift_index"
+    - "coastal_moisture_indicator"
+    - "cape"
+    - "terrain_gradient"
+    - "elevation"
+    - "distance_to_coast"
+
+training_hyperparameters:
+  random_seed: 42
+  global_ml:
+    model_type: "HistGradientBoostingRegressor"
+    loss: "squared_error"
+    max_iter: 200
+    learning_rate: 0.05
+    max_leaf_nodes: 31
+    min_samples_leaf: 20
+    l2_regularization: 1.0
+    early_stopping: true
+    validation_fraction: 0.15
+  regime_aware_ml:
+    model_type: "SoftConditionedMixtureOfExperts"
+    base_estimator: "HistGradientBoostingRegressor"
+    expert_max_iter: 150
+    expert_learning_rate: 0.05
+    meta_regressor: "RidgeRegression"
+
+artifacts:
+  base_directory: "artifacts/models"
+  catalog_file: "data/catalog.json"

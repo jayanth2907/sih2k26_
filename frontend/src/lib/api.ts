@@ -176,3 +176,24 @@ export async function fetchDataSourcesCatalog() {
   if (!res.ok) throw new ApiError(`Failed fetching data sources catalog: ${res.statusText}`, res.status);
   return res.json();
 }
+
+/**
+ * Fetch catalog of historical extreme-event case studies.
+ */
+export async function fetchCaseStudies() {
+  const url = `${API_BASE_URL}/api/v1/case-studies`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new ApiError(`Failed fetching case studies: ${res.statusText}`, res.status);
+  return res.json();
+}
+
+/**
+ * Fetch detailed historical case study profile by caseId.
+ */
+export async function fetchCaseStudyDetail(caseId: string) {
+  const url = `${API_BASE_URL}/api/v1/case-studies/${caseId}`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new ApiError(`Failed fetching case study detail for ${caseId}: ${res.statusText}`, res.status);
+  return res.json();
+}
+

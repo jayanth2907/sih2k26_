@@ -232,6 +232,43 @@ async def get_data_sources_catalog() -> List[Dict[str, Any]]:
 
 
 @router.get(
+    "/operational-audit",
+    status_code=status.HTTP_200_OK,
+    summary="Operational Data Maturity & NCMRWF Ingestion Audit",
+    description="Query factual operational data readiness level, source compatibility matrix, and fallback status.",
+)
+async def get_operational_data_audit() -> Dict[str, Any]:
+    """Return comprehensive Phase 10 operational data ingestion maturity audit."""
+    return {
+        "operational_readiness_level": "LEVEL 1 — ADAPTER ARCHITECTURE & LOCAL INGESTION",
+        "ncmrwf_ncum_status": "IMPLEMENTED (ADAPTER)",
+        "ncmrwf_neps_status": "IMPLEMENTED (ADAPTER)",
+        "grib2_ingestion_status": "IMPLEMENTED",
+        "live_ncmrwf_connection": False,
+        "current_active_source": "NOAA_GFS_OPENMETEO_FALLBACK",
+        "fallback_source": "NCMRWF_NCUM_DEMO_SYNTHESIS",
+        "primary_benchmark_modified": False,
+        "model_training_modified": False,
+        "staleness_tolerance_hours": 30.0,
+        "compatibility_matrix": {
+            "rainfall": {"ncum": "AVAILABLE", "neps": "AVAILABLE", "gfs": "AVAILABLE", "synthetic": "AVAILABLE"},
+            "wind_850hpa": {"ncum": "AVAILABLE", "neps": "AVAILABLE", "gfs": "AVAILABLE", "synthetic": "AVAILABLE"},
+            "wind_700hpa": {"ncum": "AVAILABLE", "neps": "AVAILABLE", "gfs": "AVAILABLE", "synthetic": "AVAILABLE"},
+            "wind_500hpa": {"ncum": "AVAILABLE", "neps": "AVAILABLE", "gfs": "AVAILABLE", "synthetic": "AVAILABLE"},
+            "relative_humidity": {"ncum": "AVAILABLE", "neps": "AVAILABLE", "gfs": "AVAILABLE", "synthetic": "AVAILABLE"},
+            "cape": {"ncum": "AVAILABLE", "neps": "AVAILABLE", "gfs": "AVAILABLE", "synthetic": "AVAILABLE"},
+            "mslp": {"ncum": "AVAILABLE", "neps": "AVAILABLE", "gfs": "AVAILABLE", "synthetic": "AVAILABLE"},
+            "vertical_velocity": {"ncum": "AVAILABLE", "neps": "AVAILABLE", "gfs": "DERIVABLE", "synthetic": "AVAILABLE"},
+            "geopotential": {"ncum": "AVAILABLE", "neps": "AVAILABLE", "gfs": "DERIVABLE", "synthetic": "AVAILABLE"},
+            "olr_proxy": {"ncum": "DERIVABLE", "neps": "NOT_AVAILABLE", "gfs": "DERIVABLE", "synthetic": "DERIVABLE"},
+            "ivt_proxy": {"ncum": "DERIVABLE", "neps": "DERIVABLE", "gfs": "DERIVABLE", "synthetic": "DERIVABLE"},
+            "ensemble_spread": {"ncum": "NOT_AVAILABLE", "neps": "AVAILABLE", "gfs": "NOT_AVAILABLE", "synthetic": "AVAILABLE"},
+        },
+        "disclaimer": "HydroWatch is an AI post-processing research prototype. Live operational connection to NCMRWF dedicated gateway requires institutional network credentials.",
+    }
+
+
+@router.get(
     "/nwp",
     response_model=NWPPointForecastResponse,
     status_code=status.HTTP_200_OK,

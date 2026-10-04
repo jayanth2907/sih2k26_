@@ -17,8 +17,22 @@ class GFSFallbackAdapter:
         """Check if Open-Meteo GFS endpoint is operational."""
         return True
 
-    def fetch_forecast_record(
+    def fetch_point_forecast(
+        self,
+        lat: float,
+        lon: float,
+        target_date: str,
+        lead_hours: int = 24,
+    ) -> CanonicalMeteorologicalRecord:
+        """Fetch point forecast record."""
+        ts = f"{target_date}T00:00:00Z" if "T" not in target_date else target_date
+        return self.fetch_forecast_record(
+            lat=lat,
+            lon=lon,
+            timestamp_iso=ts,
+        )
 
+    def fetch_forecast_record(
         self,
         lat: float,
         lon: float,

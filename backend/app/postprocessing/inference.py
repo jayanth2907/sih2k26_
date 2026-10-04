@@ -98,29 +98,67 @@ class PostProcessingInferenceEngine:
         raw_nwp_mm: float,
         regime_output: PostProcessingOutput,
         dominant_regime: str = "ACTIVE_MONSOON",
+        district_id: Optional[str] = None,
+        lat: Optional[float] = None,
+        lon: Optional[float] = None,
+        regime_confidence: float = 0.85,
     ) -> DistrictForecast:
-        """Build standardized DistrictForecast."""
+        """Build standardized DistrictForecast with deterministic decision support categorization."""
         try:
             reg_enum = WeatherRegimeType(dominant_regime)
         except Exception:
             reg_enum = WeatherRegimeType.ACTIVE_MONSOON
 
+        c_mm = round(regime_output.corrected_rainfall_24h_mm, 2)
+        p_heavy = round(regime_output.heavy_rain_prob_ge_64_5mm, 3)
+        p_vheavy = round(regime_output.very_heavy_rain_prob_ge_115_6mm, 3)
+        p_extreme = round(regime_output.extreme_rain_prob_ge_204_5mm, 3)
+
+        # Deterministic Decision-Support Classification (IMD Aligned Physical Limits)
+        if c_mm >= 204.5 or p_extreme >= 0.25:
+            dec_category = "EXTREMELY_HEAVY_RAINFALL"
+            dec_basis = f"Calibrated P50 ({c_mm:.1f} mm) or extreme probability ({p_extreme * 100:.1f}%) meets/exceeds 204.5 mm/24h threshold."
+        elif c_mm >= 115.6 or p_vheavy >= 0.40:
+            dec_category = "VERY_HEAVY_RAINFALL"
+            dec_basis = f"Calibrated P50 ({c_mm:.1f} mm) or very heavy probability ({p_vheavy * 100:.1f}%) meets/exceeds 115.6 mm/24h threshold."
+        elif c_mm >= 64.5 or p_heavy >= 0.55:
+            dec_category = "HEAVY_RAINFALL"
+            dec_basis = f"Calibrated P50 ({c_mm:.1f} mm) or heavy rain probability ({p_heavy * 100:.1f}%) meets/exceeds 64.5 mm/24h threshold."
+        else:
+            dec_category = "NORMAL"
+            dec_basis = f"Calibrated P50 ({c_mm:.1f} mm) is below the 64.5 mm heavy-rainfall threshold."
+
         return DistrictForecast(
+            district_id=district_id or f"{state_name[:2].upper()}_{district_name.replace(' ', '_').upper()}",
             district_name=district_name,
             state_name=state_name,
+            lat=lat,
+            lon=lon,
             raw_nwp_mm=round(raw_nwp_mm, 2),
-            corrected_mm=round(regime_output.corrected_rainfall_24h_mm, 2),
+            corrected_mm=c_mm,
             correction_delta_mm=round(regime_output.predicted_bias_delta_mm, 2),
             uncertainty_lower_bound_mm=round(regime_output.rainfall_p10_mm, 2),
             uncertainty_upper_bound_mm=round(regime_output.rainfall_p90_mm, 2),
             ensemble_spread_mm=round(regime_output.uncertainty_width_mm / 2.56, 2),
-            heavy_prob=round(regime_output.heavy_rain_prob_ge_64_5mm, 3),
-            very_heavy_prob=round(regime_output.very_heavy_rain_prob_ge_115_6mm, 3),
-            extreme_prob=round(regime_output.extreme_rain_prob_ge_204_5mm, 3),
+            heavy_prob=p_heavy,
+            very_heavy_prob=p_vheavy,
+            extreme_prob=p_extreme,
             dominant_regime=reg_enum,
+            regime_confidence=round(regime_confidence, 2),
+            aggregation_method="POINT_SAMPLED_CENTROID",
+            decision_support_category=dec_category,
+            decision_basis=dec_basis,
+            provenance_status="HELD_OUT_PROTOTYPE_EVALUATION",
+            is_official_imd_warning=False,
+            disclaimer="Prototype model-derived decision support. Not an official IMD warning.",
         )
 
-    def get_all_district_forecasts(self) -> List[DistrictForecast]:
+    def get_all_district_forecasts(
+        self,
+        state_filter: Optional[str] = None,
+        regime_filter: Optional[str] = None,
+        category_filter: Optional[str] = None,
+    ) -> List[DistrictForecast]:
         """Generate standardized district forecasts for all administrative districts."""
         from backend.app.data.sources.districts import DistrictProvider
         districts = DistrictProvider.get_all_districts()
@@ -131,6 +169,7 @@ class PostProcessingInferenceEngine:
             lon = d["lon"]
             is_coastal = d.get("coastal", False)
             d_name = d["district"]
+            d_id = d.get("district_id", f"{d['state'][:2].upper()}_{d_name.replace(' ', '_').upper()}")
 
             if lat > 30.0:
                 primary = WeatherRegimeType.WESTERN_DISTURBANCE.value
@@ -178,12 +217,25 @@ class PostProcessingInferenceEngine:
 
             regime_out = self.regime_ml_model.predict(sample)
             f_dist = self.generate_district_forecast(
+                district_id=d_id,
                 district_name=d["district"],
                 state_name=d["state"],
+                lat=lat,
+                lon=lon,
                 raw_nwp_mm=raw_rain,
                 regime_output=regime_out,
                 dominant_regime=primary,
+                regime_confidence=0.88,
             )
+
+            # Filtering
+            if state_filter and f_dist.state_name.lower() != state_filter.lower():
+                continue
+            if regime_filter and f_dist.dominant_regime.value.lower() != regime_filter.lower():
+                continue
+            if category_filter and f_dist.decision_support_category.lower() != category_filter.lower():
+                continue
+
             forecasts.append(f_dist)
 
         return forecasts

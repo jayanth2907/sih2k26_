@@ -799,11 +799,13 @@ export const CesiumGlobe: React.FC<CesiumGlobeProps> = ({
             </div>
           </div>
 
-          <div className="text-[10px] text-[#64748b] border-t border-[#1e2638] pt-1 mt-1">
-            Click any point on the 3D globe to inspect local forecast & regime telemetry.
+          <div className="text-[9px] font-mono text-[#f59e0b] border-t border-[#1e2638] pt-1 mt-1 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3 text-[#f59e0b] shrink-0" />
+            <span>Prototype Decision Support · Not an official IMD warning</span>
           </div>
         </div>
       )}
+
 
       {/* Polygon Inspection Popover (when user clicks an inundation vector) */}
       {selectedPolygonMeta && (
